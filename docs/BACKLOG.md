@@ -12,19 +12,24 @@ _Nothing._
 
 ## To test
 
-_Nothing._
-
-## Ready
-
 ### HT-001 See and manage my habits
 - Why: I need my own list of habits to track.
 - Acceptance criteria:
-  - [ ] Given no habits, when I open the app, then I see an empty state and an input to add a habit.
-  - [ ] Given fewer than 5 habits, when I type a name and add it, then it appears in the list.
-  - [ ] Given 5 habits, then the add input is disabled and says the limit is 5.
-  - [ ] Given a habit, when I remove it, then it disappears.
-  - [ ] Empty or blank names are not accepted.
-- Notes: declares capability `db`. Also remove the seed page's `sample()` call, status line and smoke-test assertions (no AI).
+  - [x] Given no habits, when I open the app, then I see an empty state and an input to add a habit.
+  - [x] Given fewer than 5 habits, when I type a name and add it, then it appears in the list.
+  - [x] Given 5 habits, then the add input is disabled and says the limit is 5.
+  - [x] Given a habit, when I remove it, then it disappears.
+  - [x] Empty or blank names are not accepted.
+- Test script for Ale:
+  1. Open the app. Expected: "No habits yet" and an input to add one.
+  2. Click Add with nothing (or only spaces) typed. Expected: nothing is added, a hint asks for a name.
+  3. Add "Read", then 4 more. Expected: all 5 appear; after the 5th the input and Add button are disabled and the page says the limit is 5.
+  4. Remove one habit. Expected: it disappears and you can add again.
+  5. Reload. Expected: habits are gone (saving comes in HT-004).
+- Notes: declares capability `db` (not used until HT-004). Also remove the seed page's `sample()` call, status line and smoke-test assertions (no AI).
+
+
+## Ready
 
 ### HT-002 Tick off today's habits
 - Why: the daily check-in is the core action.

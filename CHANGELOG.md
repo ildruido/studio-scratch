@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Add up to 5 habits by name and remove them. Blank names are refused. (HT-001)
+
 ## [0.1.0] - 2026-11-10
 
 ### Added

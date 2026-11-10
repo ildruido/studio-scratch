@@ -11,7 +11,14 @@
         <p class="eyebrow">Habit Tracker <span id="version"></span></p>
         <h1 id="page-title" tabindex="-1">Habit Tracker</h1>
       </header>
-      <p id="status" role="status"></p>
+      <form id="add-form">
+        <label for="habit-name">New habit</label>
+        <input id="habit-name" type="text" maxlength="60" autocomplete="off" />
+        <button id="add-button" type="submit">Add</button>
+      </form>
+      <p id="add-hint" role="status"></p>
+      <p id="empty">No habits yet. Add your first one above.</p>
+      <ul id="habit-list"></ul>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
