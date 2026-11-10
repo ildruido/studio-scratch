@@ -1,0 +1,179 @@
+{
+  "studio": "0.6.1",
+  "packs": {
+    "artifact": "0.1.0",
+    "base": "0.4.0"
+  },
+  "app": {
+    "slug": "studio-scratch",
+    "title": "Habit Tracker"
+  },
+  "files": {
+    ".claude/agents/planner.md": "c3c107b4cc76e409bdd1c8c0944c5ccd41e09209df1ba68293546e27d8e61ee2",
+    ".claude/agents/qa.md": "5e150a15ddacd8a2682ebae9788d51c6fd8aec6442c4e689e27c3854f6c80f8f",
+    ".claude/agents/reviewer.md": "64f7646eab7ee9a749111ec8a456d957efdf2b8f6bed63a98b25f4084248f077",
+    ".claude/hooks/check.mjs": "24bf80da832916876dedabdab33cc0e816e2b2fb1038a43ad46d6e6cff910fdb",
+    ".claude/hooks/cloud-setup.mjs": "6a856f37a92e047893486c9ee7061dcda45f29604b9459daad25b6784f32d1bd",
+    ".claude/hooks/pre-commit": "54e4800a520596f24dba9cc538de614882ede7555ff45c083f8432402835866b",
+    ".claude/packs/artifact/QA.md": "0e92e8ce0b15ddb8187102ecf96373d39f5851a397bebd509c30c3e66ed1e71b",
+    ".claude/packs/artifact/RELEASE.md": "46c1cc62ae1d0ebd10895807b2d4bb3f74a4f42817861f1b693c818499e82ee1",
+    ".claude/packs/artifact/REVIEW.md": "50de96ee69e690edd07713a60c15ef37695d61ebe29157a8f6da8696612afe61",
+    ".claude/packs/artifact/STACK.md": "6b2aa4ffe6152ca0250425438569c497462455cd6d1d7fb754d8bc55464c88d8",
+    ".claude/packs/base/STACK.md": "ed49c4a2e7b78b03223b5a93170247129c7069994576c36ad2ad7acd2a3f6327",
+    ".claude/skills/build-feature/SKILL.md": "d5b92a434ecf104f0d9637360149ca8bd01c1f27c22bd21d95022d4e8baafe36",
+    ".claude/skills/harness-idea/SKILL.md": "2e24c4181679d6f0ed2f0b3f3b1fd5530d3b1a23aba8bd8cda548e68cc36c3b7",
+    ".claude/skills/harness-sync/SKILL.md": "c9d8aca475b7a7e12e31b21e63a752cbbe5bd6476654e9fe1bb9f73e172f49bf",
+    ".claude/skills/new-app/SKILL.md": "a81f776c3500b16929b7ffdf8d96b7b1b10a0bde51c44f386491a6ca6ddd5875",
+    ".claude/skills/prd-intake/SKILL.md": "d67bad5353bf78250c7116e046ff0d1516158a7250a826c5892347b0d025e654",
+    ".claude/skills/release/SKILL.md": "b1140ad55e2d824eb06d6af3cf1b3aace65bac4ace9e2f185de517a4a6b09913",
+    ".claude/skills/test-handoff/SKILL.md": "34a151055b909031041a5e2cfaa71d71a42c8032021183951567e6752cd9f73c",
+    ".claude/studio/studio-sync.mjs": "0ba384448227671ce430cfa17cdf24524330435f028c9136a2a87ac7ba2c6572"
+  },
+  "starters": {
+    ".gitattributes": {
+      "pack": "base",
+      "installed": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c",
+      "seen": "d60f352d0db1404c70afb4bb8b2ca3fd1c610572aa40720e8a0b7baa7885418c"
+    },
+    ".github/workflows/ci.yml": {
+      "pack": "artifact",
+      "installed": "83e233cf718e86afdd35d3614809f601b47a7b43983fbc28b0298fb72c5fe08f",
+      "seen": "83e233cf718e86afdd35d3614809f601b47a7b43983fbc28b0298fb72c5fe08f"
+    },
+    ".github/workflows/harness.yml": {
+      "pack": "base",
+      "installed": "d1663dffb521a6bc9ad47bf14cba12a291a5899ef917936f42e07dfeb67ca131",
+      "seen": "d1663dffb521a6bc9ad47bf14cba12a291a5899ef917936f42e07dfeb67ca131"
+    },
+    ".github/workflows/release-tag.yml": {
+      "pack": "base",
+      "installed": "bcffb0f658af5ce295b4df6235ba8d059c1d7a80448b4ce773efad8fedcdf2bd",
+      "seen": "bcffb0f658af5ce295b4df6235ba8d059c1d7a80448b4ce773efad8fedcdf2bd"
+    },
+    ".gitignore": {
+      "pack": "base",
+      "installed": "6074dc8d38d1f45a43c8d65f92feec1cc21e721dca878cfb6685f59153fdeb7a",
+      "seen": "6074dc8d38d1f45a43c8d65f92feec1cc21e721dca878cfb6685f59153fdeb7a"
+    },
+    ".nvmrc": {
+      "pack": "base",
+      "installed": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56",
+      "seen": "f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56"
+    },
+    ".prettierignore": {
+      "pack": "base",
+      "installed": "38e9418bd19f7269f47faaa126bd2e3722cc1642e678fdf342dd41da3d83bf9e",
+      "seen": "38e9418bd19f7269f47faaa126bd2e3722cc1642e678fdf342dd41da3d83bf9e"
+    },
+    ".prettierrc.json": {
+      "pack": "base",
+      "installed": "095ed32573a224944d9eac2b8cc396b6d454ee6c15841b389ca6de65e1208a3e",
+      "seen": "095ed32573a224944d9eac2b8cc396b6d454ee6c15841b389ca6de65e1208a3e"
+    },
+    "e2e/artifact/fake-claude.ts": {
+      "pack": "artifact",
+      "installed": "dd1003966600fb651fca2de4485c0afb1d1d537be486866be065870d4ac92255",
+      "seen": "dd1003966600fb651fca2de4485c0afb1d1d537be486866be065870d4ac92255"
+    },
+    "e2e/artifact/layout.spec.ts": {
+      "pack": "artifact",
+      "installed": "125430f436121b25084cfc4195fb85ed51de61e0bc91357a1833e93f1115faef",
+      "seen": "125430f436121b25084cfc4195fb85ed51de61e0bc91357a1833e93f1115faef"
+    },
+    "e2e/artifact/smoke.spec.ts": {
+      "pack": "artifact",
+      "installed": "72fa1b10071b98269a8282085df45ff347a2036db800eca102633491dc8b0f5e",
+      "seen": "72fa1b10071b98269a8282085df45ff347a2036db800eca102633491dc8b0f5e"
+    },
+    "eslint.config.js": {
+      "pack": "base",
+      "installed": "916697f4bf7349de61da7f11fc8a40150c0e336af7d4040c750f52d7906dd262",
+      "seen": "916697f4bf7349de61da7f11fc8a40150c0e336af7d4040c750f52d7906dd262"
+    },
+    "index.html": {
+      "pack": "base",
+      "installed": "4991e6d8b1e521804ff1ccd177395b629fba03002301ea43eb5b80d0f1911a71",
+      "seen": "4991e6d8b1e521804ff1ccd177395b629fba03002301ea43eb5b80d0f1911a71"
+    },
+    "playwright.config.ts": {
+      "pack": "base",
+      "installed": "8ba63bb9b03e234ee5a0266c74e5e20f447f96f68044b34a59ddf15192bb347c",
+      "seen": "8ba63bb9b03e234ee5a0266c74e5e20f447f96f68044b34a59ddf15192bb347c"
+    },
+    "scripts/roadmap/cli.ts": {
+      "pack": "base",
+      "installed": "86179a75248f77beebd804dfdee292161e5003a306eb14b9449e0c7779d7b846",
+      "seen": "86179a75248f77beebd804dfdee292161e5003a306eb14b9449e0c7779d7b846"
+    },
+    "scripts/roadmap/roadmap.ts": {
+      "pack": "base",
+      "installed": "c9aab5e7c0c23bea03c352ffd07a9b5371d9beb4613c776445e6a162aedecf8a",
+      "seen": "c9aab5e7c0c23bea03c352ffd07a9b5371d9beb4613c776445e6a162aedecf8a"
+    },
+    "src/env.d.ts": {
+      "pack": "base",
+      "installed": "e6afec3a1049e5b71434a98cccd3eeae827281b51e04596ec893a4b508819c6a",
+      "seen": "e6afec3a1049e5b71434a98cccd3eeae827281b51e04596ec893a4b508819c6a"
+    },
+    "src/main.ts": {
+      "pack": "base",
+      "installed": "d676955e5b8987f915687f4d8841d15b73ccad67a9bb7c172baf19365ac56d8f",
+      "seen": "d676955e5b8987f915687f4d8841d15b73ccad67a9bb7c172baf19365ac56d8f"
+    },
+    "src/platform/adapters/artifact.ts": {
+      "pack": "artifact",
+      "installed": "41dc12953969b0b08c48921d93532613ff27b84b00418cb8c5020cab32c1fd04",
+      "seen": "41dc12953969b0b08c48921d93532613ff27b84b00418cb8c5020cab32c1fd04"
+    },
+    "src/platform/artifact.ts": {
+      "pack": "artifact",
+      "installed": "c2567a811d1e25b469802d161b7fd93ab430e342f8e1107552bc4f1a182eba0f",
+      "seen": "c2567a811d1e25b469802d161b7fd93ab430e342f8e1107552bc4f1a182eba0f"
+    },
+    "src/platform/fake.ts": {
+      "pack": "base",
+      "installed": "e44c3247e1129971aee2254b398cc8a4032b4dfe0e8c4e535fc1f9dd9efb85de",
+      "seen": "e44c3247e1129971aee2254b398cc8a4032b4dfe0e8c4e535fc1f9dd9efb85de"
+    },
+    "src/platform/index.ts": {
+      "pack": "base",
+      "installed": "337d84cbd97a9f903e27b5989615d7b2692130e55e19a74bf68ac91e1900940d",
+      "seen": "337d84cbd97a9f903e27b5989615d7b2692130e55e19a74bf68ac91e1900940d"
+    },
+    "src/platform/types.ts": {
+      "pack": "base",
+      "installed": "d1446d5d7880925c527c1cc1cd74f8a9d50bdc4c1887daa086270946cf6df473",
+      "seen": "d1446d5d7880925c527c1cc1cd74f8a9d50bdc4c1887daa086270946cf6df473"
+    },
+    "src/style.css": {
+      "pack": "base",
+      "installed": "27724805303c2eba7de347a4842c03c6e3b13c7456b3343895323f7f65191456",
+      "seen": "27724805303c2eba7de347a4842c03c6e3b13c7456b3343895323f7f65191456"
+    },
+    "tests/unit/artifact-platform.test.ts": {
+      "pack": "artifact",
+      "installed": "ff4587f0a04c74bf3f558407471c7e3386de960eb42ba81a5dd8ffeea9de5755",
+      "seen": "ff4587f0a04c74bf3f558407471c7e3386de960eb42ba81a5dd8ffeea9de5755"
+    },
+    "tests/unit/platform.test.ts": {
+      "pack": "base",
+      "installed": "7f1ba79c21d075bb766412c8c8800def1695cd55ea01aa097d91bfaa8fa7607c",
+      "seen": "7f1ba79c21d075bb766412c8c8800def1695cd55ea01aa097d91bfaa8fa7607c"
+    },
+    "tests/unit/roadmap.test.ts": {
+      "pack": "base",
+      "installed": "e73f29aae09510f11ac4dcd10a3082196186dafe4bd61c6a31216e121c5f8838",
+      "seen": "e73f29aae09510f11ac4dcd10a3082196186dafe4bd61c6a31216e121c5f8838"
+    },
+    "tsconfig.json": {
+      "pack": "base",
+      "installed": "ee5e737d96b0ab84d461ed5f90db84e3d7d74df6d27d8fcc4abd2a0ed6521b4d",
+      "seen": "ee5e737d96b0ab84d461ed5f90db84e3d7d74df6d27d8fcc4abd2a0ed6521b4d"
+    },
+    "vite.config.ts": {
+      "pack": "base",
+      "installed": "d88f99812f45985e4fb2cea03138f2466b67fcb14ce5ba4a27a61d7108071652",
+      "seen": "d88f99812f45985e4fb2cea03138f2466b67fcb14ce5ba4a27a61d7108071652"
+    }
+  }
+}

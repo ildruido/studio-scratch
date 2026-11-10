@@ -1,0 +1,38 @@
+---
+name: new-app
+description: Start a new app in Ale's studio - set up a fresh repo with the shared harness from app-studio, then create its PRD, backlog, Project settings and first release. Use when Ale asks for a new app, or when the start-up message says the studio harness is loaded but no app is set up yet.
+---
+
+# New app
+
+`app-studio` is the master copy of the harness. A new app gets a pinned copy (`.claude/studio/lock.json`) and later pulls updates with the `harness-sync` skill, so fixes flow from `app-studio` to every app. Ideas flow back as issues (`harness-idea`), never as edits.
+
+**Where this runs.** Best in a Claude Code Project on the "app-studio apps" cloud environment (app-studio `README.md`, "Start a new app"): the coordinator starts this skill in a thread and relays its questions. It also works in a cloud or local session with `app-studio` and the app repo side by side. Ale answers product questions only; everything else is decided here.
+
+## Steps
+
+1. **Check the setup.** List the repos beside `app-studio` in the start folder.
+   - **No app repo yet:** agree a short kebab-case repo name with Ale (`<app>`) and a 2-3 letter id prefix. Ask Ale to create one empty private repo with that name at github.com/new (Claude can't create repos), with the exact clicks. In a Project, ask the coordinator to add the repo to the Project and start a **new** thread that runs `new-app` again (a running thread can't see a repo added after it started), passing on the name and prefix. In a session, ask Ale to start a new session with both repos. Stop here.
+   - **The repo already exists with content** (for example after a discovery or inception phase with its own docs, skills and `CLAUDE.md`): read what is there first. Nothing is deleted: `install` and `pack add` never overwrite a file, and the existing docs become the input of step 8.
+   - **Not on the "app-studio apps" environment** (no "Studio harness loaded" message at start-up): carry on, and add "select the cloud environment" to Ale's checklist in step 12.
+2. **Pick the start.** Ask Ale one product question: start as an artifact prototype (a private page in the Claude app, fastest to try), or go straight to a web app (own sign-in and hosting). Default: artifact prototype. Either way the app has a platform layer from day one, so the other build can come later without rewriting features. Once a web version exists, the artifact build stays as a prototype with smoke tests only. The answer picks the stack packs: `artifact`, `web`, or `web artifact` for a web app that keeps a prototype (the first pack named decides what `npm run build` builds).
+3. **Branch.** Work in the app repo's folder beside `app-studio` (clone it there in a local session) on a branch (`chore/bootstrap`, or the session branch in a cloud session or Project thread).
+4. **Install the harness and the packs:**
+   - `node ../app-studio/scripts/studio-sync.mjs install --app .` copies the skills, agents, hook script and sync script into `.claude/`, writes the lock, and adds `CLAUDE.md` and `.claude/settings.json` from the templates when they don't exist yet.
+   - `node .claude/studio/studio-sync.mjs pack add <packs> --slug <repo> --title "<App name>"` adds the stack packs (and the `base` pack they require): the packs' docs under `.claude/packs/`, plus the starter files (build and test configs, CI workflow, platform layer, a seed page with unit and browser smoke tests, and for `web` the server, Dockerfile and preview config) and the npm scripts and dev dependencies. It never overwrites a file the repo already has.
+   - `npm install` (and `npm install --prefix server` for `web`).
+   - Optional `mirror` pack, for an app whose code must be public (open-source licences such as the GPL) while the project files stay private: add it now or later (`pack add mirror`); the setup is in `.claude/packs/mirror/RELEASE.md`.
+5. **Fill the App profile** in `CLAUDE.md`. If the repo already had a `CLAUDE.md`, `install` kept it: merge the template (`app-studio/plugins/studio/templates/CLAUDE.md`) into it by hand, so the App profile and the shared sections are there, and keep the old rules that still apply after the build starts (a decision log, writing rules); drop phase rules that end now (for example "no production code"). Project skills the repo already has stay; rename one that clashes with a harness skill. Then fill in app name, id prefix, stack, user, repo, release and preview targets, capabilities, domain rules, stack notes, and the product paragraph. Read each pack's `STACK.md` and `RELEASE.md` once: the stack notes only add what is specific to this app. Don't edit the copied skills, agents or pack docs: anything app-specific belongs in the profile.
+6. **Stack files.** The pack's starter files are now the app's own code. Check that CI still starts no run for Markdown-only and `.claude/`-only changes and skips the browser tests for a version bump (the starter workflow does).
+7. **Seed the app.** The packs already seed it: `index.html`, `src/main.ts`, the platform layer, a unit test and a browser smoke test per target, so CI has something real to run. Replace the placeholder page only when the first backlog item is built. The seed page asks the host for the AI on load (`getPlatform().sample()`, a status line and two smoke tests); if the App profile declares no AI or capability, remove that call, the status line and those smoke-test assertions in the first feature, because the reviewer rightly blocks code that uses a capability the profile doesn't declare.
+8. **Requirements.** Run `prd-intake` with Ale's description, or with the documents Ale points to (a spec or PRD, a Google or Claude Doc, the repo's discovery docs such as an MVP and roadmap), to write `docs/PRD.md` and `docs/BACKLOG.md`. Start `CHANGELOG.md` with an empty `Unreleased` section.
+9. **Verify.** `npm run check`, `npm run test:e2e` (the web target needs Postgres: set `DATABASE_URL`, and `TEST_DATABASE_URL` for `cd server && npm test`; if none is available, CI runs them), `node .claude/studio/studio-sync.mjs check` and `node .claude/studio/studio-sync.mjs health` (the commit hook runs it too and blocks commits until the App profile is filled in). Commit the lockfiles.
+10. **Merge.** Push, open a PR, wait for its checks (CLAUDE.md "Git workflow"), squash-merge (`chore: bootstrap harness`). From the next thread on, the environment loads this app's own harness, hooks included.
+11. **First release.** Run the `release` skill for v0.1.0; record the new release target URL in the App profile.
+12. **Project setup.** In a Project, end with one report to the coordinator containing:
+    - the Project instructions: `app-studio/plugins/studio/templates/project-instructions.md`, the part below the line, with `<App name>` and `<app repo>` filled in, for the coordinator to set as **Project instructions**;
+    - the settings for the coordinator to apply: thread model Sonnet, thread effort medium, coordinator model Opus;
+    - Ale's checklist, as exact clicks, of what only Ale can do: selecting the "app-studio apps" cloud environment if it wasn't selected, repository secrets or host settings the stack notes need, and anything else this setup couldn't finish.
+    In a session, give Ale the same three parts for the Project the app will use.
+13. **Harness ideas.** If anything in the harness got in the way during setup, send it with `harness-idea`; don't fix `app-studio` from here.
+14. **Tell Ale** the app link, the backlog's first Ready items, and the test script for v0.1.0.
