@@ -23,3 +23,17 @@ test("empty state, add, limit of 5, remove, blank refused", async ({ page }) => 
   await expect(page.locator("#habit-list li")).toHaveCount(4);
   await expect(page.locator("#habit-name")).toBeEnabled();
 });
+
+test("tick and untick today's habit", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#habit-name").fill("Read");
+  await page.locator("#add-button").click();
+  const box = page.getByRole("checkbox", { name: "Read done today" });
+  await expect(box).not.toBeChecked();
+  await box.check();
+  await expect(box).toBeChecked();
+  await expect(page.locator("#habit-list li.done")).toHaveCount(1);
+  await box.uncheck();
+  await expect(box).not.toBeChecked();
+  await expect(page.locator("#habit-list li.done")).toHaveCount(0);
+});

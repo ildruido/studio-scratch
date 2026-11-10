@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Tick off each habit for today, and untick it. Ticking twice never counts twice. (HT-002)
+
 ## [0.2.0] - 2026-11-10
 
 ### Added

@@ -78,3 +78,14 @@ button {
 #habit-list li span {
   overflow-wrap: anywhere;
 }
+
+#habit-list li label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+#habit-list li.done label span {
+  text-decoration: line-through;
+  opacity: 0.7;
+}

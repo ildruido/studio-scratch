@@ -1,6 +1,7 @@
 import "./style.css";
 import { startPlatform } from "./platform";
 import { MAX_HABITS, addHabit, removeHabit, type Habit } from "./habits";
+import { clearTicks, dayKey, isTicked, setTick, type Ticks } from "./ticks";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -9,6 +10,8 @@ await startPlatform();
 $("version").textContent = `v${__APP_VERSION__}`;
 
 let habits: Habit[] = [];
+let ticks: Ticks = {};
+const today = () => dayKey(new Date());
 const form = $<HTMLFormElement>("add-form");
 const input = $<HTMLInputElement>("habit-name");
 const addButton = $<HTMLButtonElement>("add-button");
@@ -25,17 +28,29 @@ function render() {
   list.replaceChildren(
     ...habits.map((h) => {
       const li = document.createElement("li");
+      const label = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = isTicked(ticks, h.id, today());
+      box.setAttribute("aria-label", `${h.name} done today`);
+      box.addEventListener("change", () => {
+        ticks = setTick(ticks, h.id, today(), box.checked);
+        render();
+      });
       const name = document.createElement("span");
       name.textContent = h.name;
+      label.append(box, name);
       const remove = document.createElement("button");
       remove.type = "button";
       remove.textContent = "Remove";
       remove.setAttribute("aria-label", `Remove ${h.name}`);
       remove.addEventListener("click", () => {
         habits = removeHabit(habits, h.id);
+        ticks = clearTicks(ticks, h.id);
         render();
       });
-      li.append(name, remove);
+      li.classList.toggle("done", box.checked);
+      li.append(label, remove);
       return li;
     }),
   );
@@ -55,3 +70,12 @@ form.addEventListener("submit", (e) => {
 });
 
 render();
+
+// Re-draw when the day changes while the page stays open.
+let shownDay = today();
+setInterval(() => {
+  if (today() !== shownDay) {
+    shownDay = today();
+    render();
+  }
+}, 60_000);
