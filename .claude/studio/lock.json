@@ -1,8 +1,8 @@
 {
-  "studio": "0.6.1",
+  "studio": "0.7.1",
   "packs": {
-    "artifact": "0.1.0",
-    "base": "0.4.0"
+    "artifact": "0.2.0",
+    "base": "0.5.0"
   },
   "app": {
     "slug": "studio-scratch",
@@ -20,13 +20,13 @@
     ".claude/packs/artifact/REVIEW.md": "50de96ee69e690edd07713a60c15ef37695d61ebe29157a8f6da8696612afe61",
     ".claude/packs/artifact/STACK.md": "6b2aa4ffe6152ca0250425438569c497462455cd6d1d7fb754d8bc55464c88d8",
     ".claude/packs/base/STACK.md": "ed49c4a2e7b78b03223b5a93170247129c7069994576c36ad2ad7acd2a3f6327",
-    ".claude/skills/build-feature/SKILL.md": "d5b92a434ecf104f0d9637360149ca8bd01c1f27c22bd21d95022d4e8baafe36",
+    ".claude/skills/build-feature/SKILL.md": "626fe4313f5b4da325062360c94e25b2142119c853b80fc929b5d87be33e1aea",
     ".claude/skills/harness-idea/SKILL.md": "2e24c4181679d6f0ed2f0b3f3b1fd5530d3b1a23aba8bd8cda548e68cc36c3b7",
-    ".claude/skills/harness-sync/SKILL.md": "c9d8aca475b7a7e12e31b21e63a752cbbe5bd6476654e9fe1bb9f73e172f49bf",
-    ".claude/skills/new-app/SKILL.md": "a81f776c3500b16929b7ffdf8d96b7b1b10a0bde51c44f386491a6ca6ddd5875",
-    ".claude/skills/prd-intake/SKILL.md": "d67bad5353bf78250c7116e046ff0d1516158a7250a826c5892347b0d025e654",
-    ".claude/skills/release/SKILL.md": "b1140ad55e2d824eb06d6af3cf1b3aace65bac4ace9e2f185de517a4a6b09913",
-    ".claude/skills/test-handoff/SKILL.md": "34a151055b909031041a5e2cfaa71d71a42c8032021183951567e6752cd9f73c",
+    ".claude/skills/harness-sync/SKILL.md": "cca4fcf42f974174b135a38cc6ad319bd36ff54867cd85da08c66fda5f44e5a7",
+    ".claude/skills/new-app/SKILL.md": "4060659b06453429a14e0775b35e2014c887648d3a2124cdc1d3c0cce483a379",
+    ".claude/skills/prd-intake/SKILL.md": "f89fadb88cbec33ba69bc02fa1158e3b3b74832ea4f63523b32b44d30d22a57d",
+    ".claude/skills/release/SKILL.md": "e0e80e6fcbf1c42629e6d1063348bec41a4e5220ad2fe6f552d97e1e4e0f84af",
+    ".claude/skills/test-handoff/SKILL.md": "74c2f9cee58282d9c8a264c3ebf2a8eec783ad650cd8662d6959da544c2d2dfa",
     ".claude/studio/studio-sync.mjs": "0ba384448227671ce430cfa17cdf24524330435f028c9136a2a87ac7ba2c6572"
   },
   "starters": {
@@ -37,13 +37,13 @@
     },
     ".github/workflows/ci.yml": {
       "pack": "artifact",
-      "installed": "83e233cf718e86afdd35d3614809f601b47a7b43983fbc28b0298fb72c5fe08f",
-      "seen": "83e233cf718e86afdd35d3614809f601b47a7b43983fbc28b0298fb72c5fe08f"
+      "installed": "74fc269cdd439a5f19bb4d99fefba0e86d255a389ed97dfb6f02c40d3718b2a4",
+      "seen": "74fc269cdd439a5f19bb4d99fefba0e86d255a389ed97dfb6f02c40d3718b2a4"
     },
     ".github/workflows/harness.yml": {
       "pack": "base",
-      "installed": "d1663dffb521a6bc9ad47bf14cba12a291a5899ef917936f42e07dfeb67ca131",
-      "seen": "d1663dffb521a6bc9ad47bf14cba12a291a5899ef917936f42e07dfeb67ca131"
+      "installed": "63f65fbd1a050155d5eb18d204b9a227c2256092b5d30f38976ffbe020bb9e8a",
+      "seen": "63f65fbd1a050155d5eb18d204b9a227c2256092b5d30f38976ffbe020bb9e8a"
     },
     ".github/workflows/release-tag.yml": {
       "pack": "base",

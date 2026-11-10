@@ -15,7 +15,7 @@ description: Keep an app's copy of the studio harness in step with app-studio - 
 4. `node ../app-studio/scripts/studio-sync.mjs pull --app .` (the master script, so a newer copy rule applies on the first pull). It updates the managed files and the lock, and refuses to overwrite an edited file unless you pass `--force`.
 5. **Pack starter files** (CI workflow, configs, server, platform adapters) are the app's own code. `pull` refreshes the ones you never edited; for the rest the check says "edited here". Read the pack's entry in `app-studio`'s `CHANGELOG.md`, diff the file against `app-studio/packs/<name>/starter/…` (placeholders `{{slug}}` and `{{title}}` stand for the app's name), merge what applies, then run `node .claude/studio/studio-sync.mjs ack` so the note stops.
 6. Read `app-studio`'s `CHANGELOG.md` for the versions you skipped. Apply any step it marks **App action** (for example a new App profile field or a settings change).
-7. Run `node .claude/studio/studio-sync.mjs health` and fix what it reports (the commit hook blocks the commit otherwise). Commit `chore(harness): sync studio vX.Y.Z` and merge it via a PR. Only `.claude/` changed, so the main CI needs no run; the `Harness` workflow checks it, so wait for it to pass before merging.
+7. Run `node .claude/studio/studio-sync.mjs health` and fix what it reports (the commit hook blocks the commit otherwise). Commit `chore(harness): sync studio vX.Y.Z` and merge it via a PR (CLAUDE.md "Git workflow"). Only `.claude/` changed, so `CI gate` passes quickly and `health` checks the harness.
 
 ## Add a stack pack to an existing app
 
