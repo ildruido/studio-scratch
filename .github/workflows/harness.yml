@@ -2,7 +2,8 @@ name: Harness
 
 # Harness health, before any code: the shared studio files are unedited, the App profile is filled
 # in, the hooks are wired, the app's own skills and agents are well formed, and doc links resolve.
-# Runs only when the harness or the docs change (code-only PRs skip it); seconds, no install.
+# Runs on every PR, so main's ruleset can require it ("health") and PRs can merge by themselves;
+# seconds, no install.
 # Being behind app-studio never fails it: the session-start check reports that.
 # Stack: base pack (app-studio). The same check runs before every commit Claude makes.
 
@@ -10,7 +11,6 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-    paths: [".claude/**", "**.md", ".github/workflows/**"]
   workflow_dispatch:
 
 concurrency:

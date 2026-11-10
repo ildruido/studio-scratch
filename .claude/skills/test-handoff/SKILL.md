@@ -36,4 +36,4 @@ App-specific facts come from the **App profile** in `CLAUDE.md`; `<XX>` below is
 
    Each bug is built in a new thread that reads the original item and its PR.
 3. If a report is unclear, ask Ale one specific question instead of guessing.
-4. Commit with `docs(backlog): record test results for vX.Y.Z`, merge via PR once its `Harness` check is green (CLAUDE.md "Git workflow"), and tell Ale what moved to Done and which bugs are next.
+4. Commit with `docs(backlog): record test results for vX.Y.Z`, merge it via a PR (CLAUDE.md "Git workflow"), and tell Ale what moved to Done and which bugs are next.

@@ -30,5 +30,5 @@ Ale describes outcomes in plain words, or hands over a document that already des
 
    Keep each item small enough to build in one session. Every criterion must be something Ale can see and check.
 7. **Place the items.** Add every new open item to the **Roadmap** list at the top of `docs/BACKLOG.md` (Now / Next / Later, create the section if missing: `## Roadmap` with `- **Now:**`, `- **Next:**`, `- **Later:**` lines); `npm run roadmap:check` fails otherwise. New work goes into **Backlog**. Move it to **Ready** only when it has no open questions. Keep Ale's existing order; put urgent bugs at the top of Ready and say so.
-8. **Commit** on a `docs/<slug>` branch (the session branch in a cloud session) with `docs(prd): …`, open a PR, and merge when its checks are green: Markdown-only changes start no `CI` run, but the `Harness` workflow runs and must pass (CLAUDE.md "Git workflow").
+8. **Commit** on a `docs/<slug>` branch (the session branch in a cloud session) with `docs(prd): …`, and merge it via a PR (CLAUDE.md "Git workflow"): a Markdown-only change still gets `CI gate` and `health`, which must pass.
 9. **Reply to Ale** with: the items created (id + title), any decision you made on their behalf, and any question that still needs an answer.
