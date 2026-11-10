@@ -29,15 +29,22 @@ _Nothing._
 - Notes: declares capability `db` (not used until HT-004). Also remove the seed page's `sample()` call, status line and smoke-test assertions (no AI).
 
 
-## Ready
-
 ### HT-002 Tick off today's habits
 - Why: the daily check-in is the core action.
 - Acceptance criteria:
-  - [ ] Given habits, then each shows a checkbox for today.
-  - [ ] When I tick a habit, then it shows as done; when I untick it, it shows as not done.
-  - [ ] Ticking the same habit again on the same day never counts a second time.
+  - [x] Given habits, then each shows a checkbox for today.
+  - [x] When I tick a habit, then it shows as done; when I untick it, it shows as not done.
+  - [x] Ticking the same habit again on the same day never counts a second time.
 - Notes: depends on HT-001. Pure date logic in a plain module, unit-tested with fixed dates.
+- Test script for Ale:
+  1. Add a habit "Read". Expected: it shows an unchecked box.
+  2. Tick it. Expected: it shows as done (struck through).
+  3. Untick it. Expected: back to not done.
+  4. Tick, remove the habit, add it again. Expected: it starts unticked.
+  5. Reload. Expected: everything is gone (saving comes in HT-004).
+
+
+## Ready
 
 ### HT-003 See each habit's streak
 - Why: the streak is the motivation.
