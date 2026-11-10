@@ -40,3 +40,41 @@ body {
   margin: 0;
   color: var(--muted);
 }
+#add-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+#add-form label {
+  flex-basis: 100%;
+}
+#habit-name {
+  flex: 1 1 10rem;
+  min-width: 0;
+  font: inherit;
+  padding: 0.4rem;
+}
+button {
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+}
+#add-hint {
+  color: var(--warn);
+  min-height: 1.5em;
+}
+#habit-list {
+  list-style: none;
+  padding: 0;
+}
+#habit-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--muted);
+}
+#habit-list li span {
+  overflow-wrap: anywhere;
+}
