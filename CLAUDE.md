@@ -13,7 +13,7 @@ The skills and agents in `.claude/` are the shared studio harness, copied from `
 | Stack          | `artifact`                                       |
 | User           | Ale, as someone tracking daily habits           |
 | Repo           | https://github.com/ildruido/studio-scratch (private)                                |
-| Release target | Private Claude artifact (URL recorded after v0.1.0)                      |
+| Release target | https://claude.ai/artifact/7iPxK1VYa2DezPqXZe5eZh (private Claude artifact)                      |
 | Preview target | none                                |
 | Capabilities   | `{"db": {}}` (saved habits and check-ins) |
 | AI plan        | No AI |
