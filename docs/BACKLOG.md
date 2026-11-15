@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,13 @@
 _Nothing._
 
 ## To test
+
+### HT-006 Friendlier habit limit message
+- Why: the limit message reads like a system error; make it warmer.
+- Acceptance criteria:
+  - [x] Given 5 habits, then the page says "You've reached the limit of 5 habits."
+- Test script for Ale:
+  1. Add 5 habits. Expected: the page says "You've reached the limit of 5 habits."
 
 ### HT-005 Friendlier hint for a blank habit name
 - Why: the blank-name hint reads like an error; make it friendlier.
