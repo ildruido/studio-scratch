@@ -136,6 +136,7 @@ In a Claude Code Project these are Project settings, which `new-app` asks the co
 - **Opus:** the Project coordinator, and reviews of risky diffs (AI prompts, storage, capabilities, auth).
 - **Sonnet (medium effort):** feature, backlog, release and harness-sync threads.
 - Raise effort or model only after a thread fails twice, never up front.
+- **A thread stays inside its backlog item.** When the item is done or blocked it hands back (the PR description and a short message) and stops; it never proposes, plans or starts the next item or phase, even if offered. Only the coordinator picks the next item and starts its thread. If a thread catches itself about to go past its item, it stops and tells the coordinator.
 - One thread per backlog item. A bug found in Ale's testing gets a new thread that reads the backlog item and its PR. Don't reopen the old thread.
 - **Never resume a thread that has been idle for over an hour.** Its cached context has expired, so the first step re-pays the whole context. Start a new thread that reads the backlog item and its PR instead; that's why every PR description ends with a hand-over (what changed, what's left, how to test).
 
