@@ -1,6 +1,7 @@
 // Claude Code hook runner. Cross-platform (Windows + Linux cloud sessions).
 //   node .claude/hooks/check.mjs lint  -> PostToolUse: ESLint the file that was just edited
-//   node .claude/hooks/check.mjs test  -> Stop: run the unit tests before the turn ends
+//   node .claude/hooks/check.mjs test  -> Stop: ESLint the TS/JS files changed since the last push (however they were
+//                                          edited, also by shell commands), then run the unit tests before the turn ends
 //   node .claude/hooks/check.mjs commit -> PreToolUse (Bash): run the harness health check before a git commit
 //   node .claude/hooks/check.mjs merge  -> PreToolUse (GitHub merge tool): block a merge of this app's PR unless its
 //                                          checks were read after the last push and all finished green
@@ -152,11 +153,29 @@ function run(cmd, args) {
   return { ok: res.status === 0, out: `${res.stdout ?? ""}${res.stderr ?? ""}`.trim() };
 }
 
+/** True for a TS/JS source file inside the app that ESLint should see (not build output or dependencies). */
+const lintable = (rel) =>
+  /\.(c|m)?(t|j)sx?$/.test(rel) && !rel.startsWith("..") && !/(^|[\\/])(dist[^\\/]*|node_modules)[\\/]/.test(rel);
+
+/** TS/JS files changed since the last push, however they were edited: uncommitted, untracked and unpushed commits. */
+function changedFiles() {
+  const git = (...args) => {
+    const r = spawnSync("git", ["-C", root, ...args], { encoding: "utf8" });
+    return r.status === 0 ? (r.stdout ?? "").split("\n").filter(Boolean) : [];
+  };
+  const names = new Set([
+    ...git("diff", "--name-only", "--relative", "HEAD"),
+    ...git("ls-files", "--others", "--exclude-standard"),
+    ...git("diff", "--name-only", "--relative", "@{upstream}...HEAD"),
+  ]);
+  return [...names].filter((f) => lintable(f) && existsSync(join(root, f)));
+}
+
 if (mode === "lint") {
   const file = input.tool_input?.file_path;
-  if (!file || !/\.(c|m)?(t|j)sx?$/.test(file)) process.exit(0);
+  if (!file) process.exit(0);
   const rel = relative(root, file);
-  if (rel.startsWith("..") || /(^|[\\/])(dist[^\\/]*|node_modules)[\\/]/.test(rel)) process.exit(0);
+  if (!lintable(rel)) process.exit(0);
   if (!hasBin("eslint")) process.exit(0);
   const { ok, out } = run("npx", ["eslint", "--max-warnings=0", "--no-warn-ignored", JSON.stringify(rel)]);
   if (!ok) {
@@ -169,6 +188,15 @@ if (mode === "lint") {
 if (mode === "test") {
   // Avoid an endless loop if Claude is already continuing because of this hook.
   if (input.stop_hook_active) process.exit(0);
+  // Files changed through shell commands (heredocs, scripts) skip the per-edit lint hook: lint them here.
+  const files = hasBin("eslint") ? changedFiles() : [];
+  if (files.length) {
+    const lint = run("npx", ["eslint", "--max-warnings=0", "--no-warn-ignored", ...files.map((f) => JSON.stringify(f))]);
+    if (!lint.ok) {
+      process.stderr.write(`ESLint failed for the files changed this session. Fix before finishing:\n${lint.out.slice(-4000)}\n`);
+      process.exit(2);
+    }
+  }
   // Vitest with the compact reporter when the app uses it, otherwise the app's own test script.
   let scripts = {};
   try {
