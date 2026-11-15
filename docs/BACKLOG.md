@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003
+- **Now:** HT-001, HT-002, HT-003, HT-005
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,13 @@
 _Nothing._
 
 ## To test
+
+### HT-005 Friendlier hint for a blank habit name
+- Why: the blank-name hint reads like an error; make it friendlier.
+- Acceptance criteria:
+  - [x] Given I click Add with a blank name, then the hint reads "Give your habit a name first."
+- Test script for Ale:
+  1. Open the app and click Add with nothing typed. Expected: the hint says "Give your habit a name first."
 
 ### HT-001 See and manage my habits
 - Why: I need my own list of habits to track.

@@ -8,7 +8,7 @@ test("empty state, add, limit of 5, remove, blank refused", async ({ page }) => 
   await page.locator("#habit-name").fill("   ");
   await page.locator("#add-button").click();
   await expect(page.locator("#habit-list li")).toHaveCount(0);
-  await expect(page.locator("#add-hint")).toContainText("Type a name");
+  await expect(page.locator("#add-hint")).toContainText("Give your habit a name first");
 
   for (const n of ["A", "B", "C", "D", "E"]) {
     await page.locator("#habit-name").fill(n);
