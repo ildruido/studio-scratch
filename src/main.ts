@@ -60,7 +60,7 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   const result = addHabit(habits, input.value, crypto.randomUUID());
   if (!result.ok) {
-    if (result.reason === "blank") hint.textContent = "Type a name for the habit first.";
+    if (result.reason === "blank") hint.textContent = "Give your habit a name first.";
     return;
   }
   habits = result.habits;

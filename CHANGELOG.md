@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Friendlier hint when adding a habit with no name. (HT-005)
+
 ### Added
 - Tick off each habit for today, and untick it. Ticking twice never counts twice. (HT-002)
 
