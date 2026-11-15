@@ -124,6 +124,14 @@ function mergeVerdict(transcript, pr) {
     return "the last read of the PR's checks couldn't be understood";
   }
   if (!Array.isArray(runs) || !runs.length) return "the PR has no checks yet (they may not have started)";
+  // Only each check's latest run counts, as on GitHub: a re-run, or the run that replaced a draft's,
+  // supersedes the older one (the higher id is newer; without ids, GitHub lists the newest first).
+  const latest = new Map();
+  for (const r of runs) {
+    const prev = latest.get(r.name);
+    if (!prev || (r.id != null && prev.id != null && Number(r.id) > Number(prev.id))) latest.set(r.name, r);
+  }
+  runs = [...latest.values()];
   const pending = runs.filter((r) => r.status !== "completed").map((r) => r.name);
   if (pending.length) return `checks still running: ${pending.join(", ")}`;
   const red = runs.filter((r) => !["success", "skipped", "neutral"].includes(r.conclusion)).map((r) => `${r.name} (${r.conclusion})`);

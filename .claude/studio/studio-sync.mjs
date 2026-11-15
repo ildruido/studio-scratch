@@ -94,6 +94,23 @@ export function studioVersion(studio) {
     .version;
 }
 
+/**
+ * The version the master copy is on, when its CHANGELOG entry says "Live check: pending": released,
+ * but not yet confirmed in the studio-scratch Project. Apps must not pull it until a later commit
+ * on main changes the line to "Live check: passed". No changelog or no marker means no gate.
+ */
+export function livePending(studio) {
+  const file = join(studio, "CHANGELOG.md");
+  if (!existsSync(file)) return null;
+  const version = studioVersion(studio);
+  const text = readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+  const start = text.indexOf(`\n## [${version}]`);
+  if (start < 0) return null;
+  const end = text.indexOf("\n## [", start + 1);
+  const entry = text.slice(start, end < 0 ? undefined : end);
+  return /^[\s>*_-]*Live check:\s*\**\s*pending/im.test(entry) ? version : null;
+}
+
 // ---------- stack packs ----------
 
 const packDir = (studio, name) => join(studio, "packs", name);
@@ -459,6 +476,7 @@ function parseArgs(argv) {
   for (let i = 1; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--warn") opts.warn = true;
+    else if (a === "--live-check") opts.liveCheck = true;
     else if (a === "--force") opts.force = true;
     else if (["--app", "--studio", "--slug", "--title"].includes(a)) opts[a.slice(2)] = argv[++i];
     else if (a.startsWith("--")) throw new Error(`Unknown argument: ${a}`);
@@ -788,6 +806,17 @@ function run(argv) {
     return 1;
   }
 
+  // Pull, install and pack add copy what app-studio holds into the app: stop on a release that
+  // hasn't passed its live check. `--live-check` is for the studio-scratch check only.
+  const pending = ["pull", "install"].includes(opts.cmd) || (opts.cmd === "pack" && opts.rest[0] === "add") ? studio && livePending(studio) : null;
+  if (pending && !opts.liveCheck) {
+    console.error(
+      `app-studio v${pending} is not live-checked yet (its CHANGELOG.md entry says "Live check: pending"), so nothing was changed. ` +
+        "Wait until the entry says \"Live check: passed\", or run it with --live-check only for the studio-scratch check.",
+    );
+    return 1;
+  }
+
   if (opts.cmd === "pull" || opts.cmd === "install") {
     if (!studio) {
       console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
@@ -870,7 +899,7 @@ function run(argv) {
     return 0;
   }
 
-  console.error("Usage: studio-sync.mjs <install|check|health|pull|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force]");
+  console.error("Usage: studio-sync.mjs <install|check|health|pull|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force] [--live-check]");
   return 2;
 }
 
