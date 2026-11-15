@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- Friendlier message when you reach the 5-habit limit. (HT-006)
 - Friendlier hint when adding a habit with no name. (HT-005)
 
 ### Added

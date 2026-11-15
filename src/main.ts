@@ -24,7 +24,7 @@ function render() {
   empty.hidden = habits.length > 0;
   input.disabled = full;
   addButton.disabled = full;
-  hint.textContent = full ? `Limit reached: you can track at most ${MAX_HABITS} habits.` : "";
+  hint.textContent = full ? `You've reached the limit of ${MAX_HABITS} habits.` : "";
   list.replaceChildren(
     ...habits.map((h) => {
       const li = document.createElement("li");
