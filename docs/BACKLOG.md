@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007
 - **Next:** HT-004
 - **Later:**
 
@@ -18,6 +18,14 @@ _Nothing._
   - [x] Given 5 habits, then the page says "You've reached the limit of 5 habits."
 - Test script for Ale:
   1. Add 5 habits. Expected: the page says "You've reached the limit of 5 habits."
+
+### HT-007 Friendlier empty-state message
+- Why: the first screen should tell a new user exactly what to do.
+- Acceptance criteria:
+  - [x] Given no habits, then the page says "No habits yet. Type a name above and press Add to start."
+- Test script for Ale:
+  1. Open the app with no habits. Expected: the message reads "No habits yet. Type a name above and press Add to start."
+  2. Add a habit. Expected: the message disappears.
 
 ### HT-005 Friendlier hint for a blank habit name
 - Why: the blank-name hint reads like an error; make it friendlier.

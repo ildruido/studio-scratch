@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 
 test("empty state, add, limit of 5, remove, blank refused", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#empty")).toBeVisible();
+  await expect(page.locator("#empty")).toHaveText(
+    "No habits yet. Type a name above and press Add to start.",
+  );
   await expect(page.locator("#habit-name")).toBeEnabled();
 
   await page.locator("#habit-name").fill("   ");
