@@ -17,6 +17,8 @@ description: Keep an app's copy of the studio harness in step with app-studio - 
 6. Read `app-studio`'s `CHANGELOG.md` for the versions you skipped. Apply any step it marks **App action** (for example a new App profile field or a settings change).
 7. Run `node .claude/studio/studio-sync.mjs health` and fix what it reports (the commit hook blocks the commit otherwise). Commit `chore(harness): sync studio vX.Y.Z` and merge it via a PR (CLAUDE.md "Git workflow"). Only `.claude/` changed, so `CI gate` passes quickly and `health` checks the harness.
 
+An app set up before the harness had modules or a lock is not a plain sync: use the `migrate-app` skill, which starts with `studio-sync.mjs inventory` and Ale's OK on a plan.
+
 ## Add a stack pack to an existing app
 
 `node .claude/studio/studio-sync.mjs pack add <name>` (for example when an artifact prototype gets a web version: `pack add web`). Files the app already has are kept and listed; merge those by hand from `app-studio/packs/<name>/starter/`. Then `npm install` (and `npm install --prefix server` for `web`) and commit the lockfiles. Adding `web` to an artifact app: replace `.github/workflows/ci.yml` with the web starter by hand and set `build` to `build:web`.
