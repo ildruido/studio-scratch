@@ -1,8 +1,8 @@
 {
-  "studio": "0.16.0",
+  "studio": "0.17.2",
   "packs": {
-    "artifact": "0.3.0",
-    "base": "0.8.0"
+    "artifact": "0.4.0",
+    "base": "0.9.0"
   },
   "app": {
     "slug": "studio-scratch",
@@ -16,18 +16,18 @@
     ".claude/hooks/cloud-setup.mjs": "6a856f37a92e047893486c9ee7061dcda45f29604b9459daad25b6784f32d1bd",
     ".claude/hooks/pre-commit": "54e4800a520596f24dba9cc538de614882ede7555ff45c083f8432402835866b",
     ".claude/packs/artifact/QA.md": "0e92e8ce0b15ddb8187102ecf96373d39f5851a397bebd509c30c3e66ed1e71b",
-    ".claude/packs/artifact/RELEASE.md": "5ef1da2a6364e4dbf86a68a8fc927b9c384186734fe3ea838d1f86c2f7ab27c1",
+    ".claude/packs/artifact/RELEASE.md": "c6e21d4d79aca000b979b51c12064713c78c7879f4fc0d54cc8e68b120c8f8b1",
     ".claude/packs/artifact/REVIEW.md": "50de96ee69e690edd07713a60c15ef37695d61ebe29157a8f6da8696612afe61",
     ".claude/packs/artifact/STACK.md": "1d470fe8293028db6eddfaf28ef50ddc7743b51f7e5e87bb423081037dad86cf",
-    ".claude/packs/base/STACK.md": "697910ca0320d05fcf4ae03254babacd529520fc1e57790f6cdd7e06916ce4f6",
+    ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/skills/build-feature/SKILL.md": "b4975365bcb1b84df191cfb4fb1a055c64cbe1a8dca4ad9dbfb0a34232427c61",
     ".claude/skills/harness-idea/SKILL.md": "2e24c4181679d6f0ed2f0b3f3b1fd5530d3b1a23aba8bd8cda548e68cc36c3b7",
     ".claude/skills/harness-sync/SKILL.md": "9e2817a321b5a9ea86d2b8de41df7a7fdc6780b5d4a86ce3fb34789e2ae91a4a",
-    ".claude/skills/new-app/SKILL.md": "e406e37a8699dae1c0028a5cb0f40c3a8919f42764eb653dbafde165e408f7ab",
-    ".claude/skills/prd-intake/SKILL.md": "ad260b0d62f9da0b23f9d27eb8006429eeef83752cdb9c733ceaff91de2a517f",
-    ".claude/skills/release/SKILL.md": "a11417c8186c8cd7155d7aa5c6e86a9a693f7213e74a8ac1012aff4e77e176d3",
+    ".claude/skills/new-app/SKILL.md": "5ab684302fd77039d1a5c662bc0cf3976d8c7e9776ef5f2602215114544c7722",
+    ".claude/skills/prd-intake/SKILL.md": "142aaed65f9bb6ccb918ef5ce789666b02f91f925d610538fd71331c0ad7e1aa",
+    ".claude/skills/release/SKILL.md": "41f90119ced2687a8f20d32a16337ba5d339a6527c411cd14a7b976b7f2bc515",
     ".claude/skills/test-handoff/SKILL.md": "3b726d8708afa0e0a56dfc10ea5c03160b365876a11dfcee3512e7b05c6ed309",
-    ".claude/studio/studio-sync.mjs": "9fafc3cd3238129eb6c90ca971c51005133e5198cacf03843715915a1829cea6"
+    ".claude/studio/studio-sync.mjs": "70544647a9b7dfbd80d191ce5c1dc0b554d653fb20799cb4fa3aa79156d66a57"
   },
   "starters": {
     ".gitattributes": {
