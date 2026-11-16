@@ -14,7 +14,7 @@ App-specific facts (id prefix, stack, domain rules, stack notes) come from the *
 3. **Plan.** For anything beyond a one-file change, run the `planner` agent with the item text. Resolve its open questions using CLAUDE.md rules; ask Ale only for product-level questions.
 4. **Write tests first where practical.**
    - Pure logic (prompts, adapters, scoring, storage mapping) goes in `src/` modules without DOM access, with unit tests in `tests/unit/`.
-   - Each new user flow gets a browser test in `e2e/`. Fake every host capability and AI call in tests (see the stack notes); never call a real model from tests.
+   - Each new user flow gets a browser test in `e2e/`. Fake every host capability in tests, and every AI call if the App profile says AI is on (see the stack notes); never call a real model from tests.
    - **Bugs: reproduce first.** Before changing code, write a test (unit or e2e) that shows what Ale saw, run it, and watch it fail for that reason. Find the root cause rather than patching the symptom; if three fixes in a row don't hold, stop and question the design instead of trying a fourth. The fix is done when that test passes and the rest of the suite stays green. Same rule for bugs the `reviewer` or `qa` agent finds.
 5. **Implement** in small commits using Conventional Commits (`feat(scope): …`, `Refs: <XX>-0NN` in the body). Reach host capabilities only through the platform layer. Respect the App profile's domain rules and the stack notes' build limits.
 6. **If capabilities change** (a host capability or permission is added or removed), update the Capabilities line in the App profile and note it for the release, because Ale will see a new consent prompt.

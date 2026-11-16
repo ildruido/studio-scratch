@@ -1,18 +1,18 @@
 // The one place the page asks "where am I running?". The build picks the adapter whose target
 // matches `__TARGET__` (see src/platform/adapters/); with none, every capability is absent.
+import { absentCapabilities } from "./registry";
 import type { Platform, PlatformAdapter } from "./types";
 
-export type { Platform, PlatformAdapter } from "./types";
+export type { Capability, Platform, PlatformAdapter } from "./types";
 
 /** A place with no host at all: the page still renders and explains itself. */
 export const nullPlatform: Platform = {
+  ...absentCapabilities(),
   hasRuntime: () => false,
-  sample: async () => null,
   db: async () => null,
   user: async () => null,
   downloads: async () => null,
-  permissionState: async () => null,
-};
+} as Platform;
 
 const adapters = import.meta.glob<{ default: PlatformAdapter }>("./adapters/*.ts", {
   eager: true,

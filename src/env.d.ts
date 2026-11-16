@@ -4,61 +4,8 @@ declare const __TARGET__: "artifact" | "web";
 
 // The shapes the page uses from its host. The Claude artifact runtime (`window.claude`) provides
 // them as they are; the web adapter returns the same shapes over /api/*. Only what this
-// app uses: add to these as the app uses more of the runtime.
-
-interface SampleTextUpdate {
-  text: string;
-  delta: string;
-}
-
-interface SampleTool {
-  name: string;
-  description: string;
-  inputSchema?: { type: "object"; properties?: Record<string, unknown>; required?: string[] };
-  execute(input: Record<string, unknown>, context: { signal: AbortSignal }): unknown;
-}
-
-interface SampleOptions {
-  onText?: (update: SampleTextUpdate) => void;
-  signal?: AbortSignal;
-  modelTier?: "quick" | "default" | "complex";
-  cache?: boolean | { gcTime?: number; refresh?: boolean };
-  /** Page functions the AI may call; only where limits() reports `tools`. */
-  tools?: SampleTool[];
-}
-
-interface SampleLimits {
-  maxPromptBytes: number;
-  tools?: { maxCount: number };
-}
-
-interface SampleResult {
-  text: string;
-  truncated: boolean;
-  modelTierApplied: "quick" | "default" | "complex";
-}
-
-/** What a rejected sample() call carries. A plain object, not an Error. */
-interface SampleError {
-  code: string;
-  message: string;
-  text?: string;
-}
-
-type SampleFn = ((
-  input: string | { role: "user" | "assistant"; content: string }[],
-  options?: SampleOptions,
-) => Promise<SampleResult>) & {
-  /** Local and free; rejects on older runtimes. */
-  limits?: () => Promise<SampleLimits>;
-};
-
-type PermissionState = "granted" | "prompt" | "denied" | "unavailable";
-
-interface PermissionsApi {
-  /** Reads a capability's consent state without prompting. */
-  state(name: string): Promise<PermissionState>;
-}
+// app uses: add to these as the app uses more of the runtime. A module's own shapes live with
+// the module (the `ai` module's in src/ai.d.ts).
 
 interface DbError {
   code: string;
@@ -119,8 +66,6 @@ type DownloadsFn = {
 };
 
 interface ClaudeRuntime {
-  use(name: "sample"): Promise<SampleFn | null>;
-  use(name: "permissions"): Promise<PermissionsApi | null>;
   use(name: "db"): Promise<DbApi | null>;
   use(name: "user"): Promise<UserApi | null>;
   use(name: "downloads"): Promise<DownloadsFn | null>;

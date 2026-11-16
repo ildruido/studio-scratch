@@ -20,4 +20,4 @@ A second private artifact holds branch builds for checks Ale must do inside the 
 
 - **Capabilities:** the exact JSON passed at publish, e.g. `{"sample": {}, "db": {}, "user": {}}`.
 - **Release target:** the app's single artifact URL; Ale's link never changes.
-- **Stack notes:** point at this pack; add only app-specific lines (extra build limits, a Lab-style preview build).
+- **Stack notes:** point at this pack; add only app-specific lines (extra build limits, an extra preview build).
