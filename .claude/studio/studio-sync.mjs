@@ -371,6 +371,7 @@ export function compare(app, studio) {
       const m = starters[path];
       if (!m || m.hash === rec.seen) continue;
       const cur = localHash(app, path);
+      if (cur === m.hash) continue; // already equals the current starter (e.g. only formatting differed from the last install): nothing to merge
       report.starters.push({ path, pack: rec.pack, refreshable: !held && cur === rec.installed });
     }
     report.newStarters = Object.keys(starters).filter((p) => !(p in (lock.starters ?? {})) && localHash(app, p) === null);
@@ -454,7 +455,9 @@ export function pull(app, studio, { force = false } = {}) {
       const m = starters[path];
       if (!m || m.hash === rec.seen) continue;
       if (result.holdReason) result.held.push(path);
-      else if (localHash(app, path) === rec.installed) {
+      else if (localHash(app, path) === m.hash) {
+        newLock.starters[path] = { pack: rec.pack, installed: m.hash, seen: m.hash }; // already the current starter: record it, nothing to merge
+      } else if (localHash(app, path) === rec.installed) {
         writeFileSync(join(app, path), m.text);
         newLock.starters[path] = { pack: rec.pack, installed: m.hash, seen: m.hash };
         result.refreshed.push(path);
@@ -979,6 +982,12 @@ export function inventory(app, studio) {
   if (web) out.push(`  sign-in mode setting: ${mode ? mode : "not set (the server then means invite-only, today's behaviour)"}`);
   out.push(`  roadmap tooling: ${has("scripts/roadmap") ? "present (the app's own; keep it as it is, do not add the roadmap module)" : "none"}`);
   out.push(`  modules to switch on: ${need.length ? need.join(", ") : "none"}`);
+  const moduleOf = (n) => { try { return packKind(studio, n) === "module"; } catch { return false; } };
+  const modulesOn = locked.filter(moduleOf);
+  out.push("", "Modules", `  on now: ${modulesOn.length ? modulesOn.join(", ") : "none"}${modulesOn.includes("user") ? " (user = who is signed in)" : ""}`);
+  out.push(`  the code needs, not on yet: ${need.length ? need.join(", ") : "none"}`);
+  out.push(`  roadmap: ${modulesOn.includes("roadmap") ? "module on" : has("scripts/roadmap") ? "the app's own tooling (module off, on purpose)" : "off"}`);
+  out.push(`  sign-in mode: ${web ? (mode ? mode : "not set (the server then means invite-only)") : "not applicable (no server)"}`);
 
   // Starter files of the packs the app will have, compared with what the app holds today.
   const target = packClosure(studio, [...new Set([...packs, ...need])]);
@@ -1007,7 +1016,12 @@ export function inventory(app, studio) {
   }
 
   const gaps = [...featureGaps(app), ...profileGaps(app)];
-  out.push("", "App profile (CLAUDE.md)", ...(profileSection(app) === null ? ["  CLAUDE.md has no App profile yet"] : gaps.length ? gaps.map((g) => `  missing: ${g}`) : ["  Features rows are filled in"]));
+  const prof = profileSection(app);
+  const answer = (f) => { const v = prof === null ? null : profileField(prof, f); return v === null ? "no row" : blankField(v) ? "not filled in" : v.replace(/^`|`$/g, ""); };
+  out.push("", "App profile (CLAUDE.md)");
+  if (prof !== null)
+    out.push(`  AI: ${answer("AI") === "no row" || answer("AI") === "not filled in" ? answer("AI") : aiValue(prof)}`, `  Access model (who can get in): ${answer("Access model")}`, `  Storage shape: ${answer("Storage shape")}`);
+  out.push(...(profileSection(app) === null ? ["  CLAUDE.md has no App profile yet"] : gaps.length ? gaps.map((g) => `  missing: ${g}`) : ["  Features rows are filled in"]));
   out.push(
     "",
     "Suggested order (one branch, one PR; the way back is reverting it)",
