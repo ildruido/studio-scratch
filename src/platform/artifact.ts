@@ -25,6 +25,5 @@ export const artifactPlatform: Platform = {
   ...moduleCapabilities(),
   hasRuntime: () => Boolean(window.claude),
   db: async () => (window.claude ? window.claude.use("db") : null),
-  user: async () => (window.claude ? window.claude.use("user") : null),
   downloads: async () => (window.claude ? window.claude.use("downloads") : null),
 } as Platform;

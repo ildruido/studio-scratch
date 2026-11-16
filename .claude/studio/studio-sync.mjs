@@ -137,10 +137,12 @@ export const packKind = (studio, name) => readPack(studio, name).kind ?? "stack"
 // starter files from app-studio would drop it and break the build, so pull holds them back.
 const CODE_DIRS = ["src", "tests", "e2e"];
 const CODE_FILE = /\.(ts|tsx|js|mjs)$/;
+// The harness's own platform tests (tests/unit/platform.test.ts, artifact-platform.test.ts, ...) call every method.
+const PLATFORM_TEST = /^tests\/(?:.*\/)?[^/]*platform[^/]*\.test\.[a-z]+$/;
 
 /**
  * Modules the app calls into without having them: [{ pack, methods }]. Only the app's own code
- * counts: the platform layer (src/platform/) and harness starter files the app never edited are
+ * counts: the platform layer (src/platform/), its platform tests and harness starter files the app never edited are
  * the harness's old copies (they may call the old built-in AI), not the app using AI.
  */
 export function missingModules(app, studio, packs) {
@@ -154,7 +156,7 @@ export function missingModules(app, studio, packs) {
     .filter((f) => CODE_FILE.test(f))
     .filter((f) => {
       const rel = toPosix(relative(app, f));
-      return !rel.startsWith("src/platform/") && !(rel in starters && localHash(app, rel) === starters[rel].installed);
+      return !rel.startsWith("src/platform/") && !PLATFORM_TEST.test(rel) && !(rel in starters && localHash(app, rel) === starters[rel].installed);
     })
     .map((f) => readFileSync(f, "utf8"))
     .join("\n");

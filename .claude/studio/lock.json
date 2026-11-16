@@ -1,8 +1,9 @@
 {
-  "studio": "0.17.2",
+  "studio": "0.17.3",
   "packs": {
     "artifact": "0.4.0",
-    "base": "0.9.0"
+    "base": "0.9.0",
+    "user": "0.1.0"
   },
   "app": {
     "slug": "studio-scratch",
@@ -20,6 +21,7 @@
     ".claude/packs/artifact/REVIEW.md": "50de96ee69e690edd07713a60c15ef37695d61ebe29157a8f6da8696612afe61",
     ".claude/packs/artifact/STACK.md": "1d470fe8293028db6eddfaf28ef50ddc7743b51f7e5e87bb423081037dad86cf",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
+    ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
     ".claude/skills/build-feature/SKILL.md": "b4975365bcb1b84df191cfb4fb1a055c64cbe1a8dca4ad9dbfb0a34232427c61",
     ".claude/skills/harness-idea/SKILL.md": "2e24c4181679d6f0ed2f0b3f3b1fd5530d3b1a23aba8bd8cda548e68cc36c3b7",
     ".claude/skills/harness-sync/SKILL.md": "9e2817a321b5a9ea86d2b8de41df7a7fdc6780b5d4a86ce3fb34789e2ae91a4a",
@@ -27,7 +29,7 @@
     ".claude/skills/prd-intake/SKILL.md": "142aaed65f9bb6ccb918ef5ce789666b02f91f925d610538fd71331c0ad7e1aa",
     ".claude/skills/release/SKILL.md": "41f90119ced2687a8f20d32a16337ba5d339a6527c411cd14a7b976b7f2bc515",
     ".claude/skills/test-handoff/SKILL.md": "3b726d8708afa0e0a56dfc10ea5c03160b365876a11dfcee3512e7b05c6ed309",
-    ".claude/studio/studio-sync.mjs": "70544647a9b7dfbd80d191ce5c1dc0b554d653fb20799cb4fa3aa79156d66a57"
+    ".claude/studio/studio-sync.mjs": "65c285e555e597387883c19b340a67a84d44d619600fdfe6176082f74e687527"
   },
   "starters": {
     ".gitattributes": {
@@ -128,22 +130,27 @@
     "src/platform/artifact.ts": {
       "pack": "artifact",
       "installed": "c2567a811d1e25b469802d161b7fd93ab430e342f8e1107552bc4f1a182eba0f",
-      "seen": "50f23d6ff4350f31ffe12be72ef3d2aadb7d338af0436a6b9fdbb6670ddb71b3"
+      "seen": "ea0274c0b547f25edc7f55c6f7fedb953df9f01463a1457a03138fc0e4e98344"
+    },
+    "src/platform/capabilities/user.ts": {
+      "pack": "user",
+      "installed": "5e7cba624978f7c472ef40b2d139de2ffe78943e2381f0c803fa2682837f0618",
+      "seen": "5e7cba624978f7c472ef40b2d139de2ffe78943e2381f0c803fa2682837f0618"
     },
     "src/platform/fake.ts": {
       "pack": "base",
       "installed": "e44c3247e1129971aee2254b398cc8a4032b4dfe0e8c4e535fc1f9dd9efb85de",
-      "seen": "a8ee3fef6ac7fe41e20481b22ae34be325a538540cdf92967e747d14939346a7"
+      "seen": "d9b0256d84c98f1183c5801337955639eff3a68071742a1e447a265bc9e39c3f"
     },
     "src/platform/index.ts": {
       "pack": "base",
       "installed": "337d84cbd97a9f903e27b5989615d7b2692130e55e19a74bf68ac91e1900940d",
-      "seen": "a7caa7c87707c29367116c5958814c980e1334ef6000173175e4364b13a04c82"
+      "seen": "04d1f37809ef82a000e96262f745d70192f603c2883748db22c943c35d33518c"
     },
     "src/platform/types.ts": {
       "pack": "base",
       "installed": "d1446d5d7880925c527c1cc1cd74f8a9d50bdc4c1887daa086270946cf6df473",
-      "seen": "d6df670fd0b2468002e001850b0b19fd32f575cb167249059d25f2187b0b6c70"
+      "seen": "633278278d1b656119ecc625167f439a9c306460fbabb0b9835a1c9545bfec1b"
     },
     "src/style.css": {
       "pack": "base",
@@ -153,17 +160,22 @@
     "tests/unit/artifact-platform.test.ts": {
       "pack": "artifact",
       "installed": "ff4587f0a04c74bf3f558407471c7e3386de960eb42ba81a5dd8ffeea9de5755",
-      "seen": "d433e227348e463f236159aed26afbab7a2caf7c07ef34a2099f8dba8b4487c7"
+      "seen": "ba0506103a75f38f6ee901d9961f418bb06acc6b6a025eba5cdd2ad8c09a38ab"
     },
     "tests/unit/platform.test.ts": {
       "pack": "base",
       "installed": "7f1ba79c21d075bb766412c8c8800def1695cd55ea01aa097d91bfaa8fa7607c",
-      "seen": "ff9b244773a40a1498b0d15e674474262bab287f1c4c428da575baec6743e2f0"
+      "seen": "580508c1e2f428085560ba663d4247b3825c8786eec84edd7bced553c7fa4485"
     },
     "tests/unit/roadmap.test.ts": {
       "pack": "base",
       "installed": "e73f29aae09510f11ac4dcd10a3082196186dafe4bd61c6a31216e121c5f8838",
       "seen": "e73f29aae09510f11ac4dcd10a3082196186dafe4bd61c6a31216e121c5f8838"
+    },
+    "tests/unit/user.test.ts": {
+      "pack": "user",
+      "installed": "42fa986907fc31e708b6516f71bfbe805f937c0009bcdf76f71f2c276f5eace2",
+      "seen": "42fa986907fc31e708b6516f71bfbe805f937c0009bcdf76f71f2c276f5eace2"
     },
     "tsconfig.json": {
       "pack": "base",

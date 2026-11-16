@@ -11,7 +11,6 @@ describe("artifact platform", () => {
     vi.stubGlobal("window", {});
     expect(artifactPlatform.hasRuntime()).toBe(false);
     expect(await artifactPlatform.db()).toBeNull();
-    expect(await artifactPlatform.user()).toBeNull();
     for (const cap of capabilities)
       for (const m of cap.methods) expect(await methods[m]!(), m).toBeNull();
   });
@@ -21,10 +20,8 @@ describe("artifact platform", () => {
     vi.stubGlobal("window", { claude: { use } });
     expect(artifactPlatform.hasRuntime()).toBe(true);
     await artifactPlatform.db();
-    await artifactPlatform.user();
     await artifactPlatform.downloads();
     expect(use).toHaveBeenCalledWith("db");
-    expect(use).toHaveBeenCalledWith("user");
     expect(use).toHaveBeenCalledWith("downloads");
     for (const cap of capabilities)
       for (const m of cap.methods) expect(typeof methods[m], m).toBe("function");

@@ -10,7 +10,6 @@ describe("platform", () => {
     const p = getPlatform();
     expect(p.hasRuntime()).toBe(false);
     expect(await p.db()).toBeNull();
-    expect(await p.user()).toBeNull();
   });
 
   it("the fake platform stores without any host", async () => {

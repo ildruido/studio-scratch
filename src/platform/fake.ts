@@ -47,7 +47,8 @@ export function memoryDb(store = new Map<string, Record<string, unknown>>()): Db
 
 /**
  * A platform whose documents live in memory and whose module capabilities answer with their fakes
- * (the `ai` module's fake AI, for one). Pass members to replace, e.g. `fakePlatform({ user })`.
+ * (the `ai` module's fake AI, the `user` module's "test-user"). Pass members to replace, e.g.
+ * `fakePlatform({ downloads })`.
  */
 export function fakePlatform(overrides: Partial<Platform> = {}): Platform {
   const db = memoryDb();
@@ -55,7 +56,6 @@ export function fakePlatform(overrides: Partial<Platform> = {}): Platform {
     ...fakeCapabilities(),
     hasRuntime: () => true,
     db: async () => db,
-    user: async () => ({ id: async () => "test-user" }),
     downloads: async () => null,
     ...overrides,
   } as Platform;

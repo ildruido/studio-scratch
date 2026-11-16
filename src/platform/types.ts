@@ -1,20 +1,18 @@
 // What the page needs from the place it runs in. Every app's platform has the members below; a
-// feature module adds its own (the `ai` module adds the AI) with a file in src/platform/capabilities/
-// (see Capability). Every getter resolves null when that part is not available, and the page must cope.
+// feature module adds its own (the `ai` module adds the AI, the `user` module who is signed in)
+// with a file in src/platform/capabilities/ (see Capability). Every getter resolves null when that part is not available, and the page must cope.
 
 export interface Platform {
   /** False when there is no host runtime at all (an ordinary browser tab, unit tests). */
   hasRuntime(): boolean;
-  /** Per-user documents. */
+  /** Documents (per person where someone is signed in, shared otherwise). */
   db(): Promise<DbApi | null>;
-  /** Who is using the page. */
-  user(): Promise<UserApi | null>;
   /** Offer the viewer a generated file to save. */
   downloads(): Promise<DownloadsFn | null>;
 }
 
-/** The members a module adds: every Platform method that is not one of the four above. */
-export type CapabilityMethod = Exclude<keyof Platform, "hasRuntime" | "db" | "user" | "downloads">;
+/** The members a module adds: every Platform method that is not one of the three above. */
+export type CapabilityMethod = Exclude<keyof Platform, "hasRuntime" | "db" | "downloads">;
 
 type Fn<M extends keyof Platform> = Platform[M] extends (...args: infer A) => infer R
   ? { args: A; result: R }
