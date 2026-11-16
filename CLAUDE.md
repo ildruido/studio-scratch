@@ -16,7 +16,10 @@ The skills and agents in `.claude/` are the shared studio harness, copied from `
 | Release target | https://claude.ai/artifact/7iPxK1VYa2DezPqXZe5eZh (private Claude artifact)                      |
 | Preview target | none                                |
 | Capabilities   | `{"db": {}}` (saved habits and check-ins) |
-| AI plan        | No AI |
+| AI             | off (existing app: no AI) |
+| AI plan        | none |
+| Access model   | `whoever the owner shares it with (artifact app)` (existing app: private artifact, no sign-in) |
+| Storage shape  | `per-person documents` (existing app: one person's habits and check-ins in `db`) |
 
 ### Domain rules
 

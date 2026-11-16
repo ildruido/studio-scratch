@@ -1,4 +1,5 @@
-// A platform for unit tests: nothing here talks to a real host or a real model.
+// A platform for unit tests: nothing here talks to a real host.
+import { fakeCapabilities } from "./registry";
 import type { Platform } from "./types";
 
 class Snap implements DbDocumentSnapshot {
@@ -44,19 +45,18 @@ export function memoryDb(store = new Map<string, Record<string, unknown>>()): Db
   return { doc, collection };
 }
 
-/** A platform whose AI answers with `answer` and whose documents live in memory. */
-export function fakePlatform(answer = "A fake answer."): Platform {
+/**
+ * A platform whose documents live in memory and whose module capabilities answer with their fakes
+ * (the `ai` module's fake AI, for one). Pass members to replace, e.g. `fakePlatform({ user })`.
+ */
+export function fakePlatform(overrides: Partial<Platform> = {}): Platform {
   const db = memoryDb();
-  const sample = (async (_input, options) => {
-    options?.onText?.({ text: answer, delta: answer });
-    return { text: answer, truncated: false, modelTierApplied: "quick" };
-  }) as SampleFn;
   return {
+    ...fakeCapabilities(),
     hasRuntime: () => true,
-    sample: async () => sample,
     db: async () => db,
     user: async () => ({ id: async () => "test-user" }),
     downloads: async () => null,
-    permissionState: async () => "granted",
-  };
+    ...overrides,
+  } as Platform;
 }

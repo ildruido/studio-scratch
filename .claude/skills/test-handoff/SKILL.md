@@ -21,7 +21,7 @@ App-specific facts come from the **App profile** in `CLAUDE.md`; `<XX>` below is
 
 ## Part B: process the results
 
-1. For each step Ale reports as passing, tick its criteria. When all criteria of an item pass, move it to **Done** with the release version: add the full item at the top of `docs/BACKLOG-DONE.md` and only its title line under **Done** in `docs/BACKLOG.md`. Remove its id from the **Roadmap** list at the same time.
+1. For each step Ale reports as passing, tick its criteria. When all criteria of an item pass, move it to **Done** with the release version: add the full item at the top of `docs/BACKLOG-DONE.md` and only its title line under **Done** in `docs/BACKLOG.md`. If the app has the `roadmap` module, remove its id from the **Roadmap** list at the same time.
 2. For each failure, create a bug item at the top of **Ready**:
 
    ```md

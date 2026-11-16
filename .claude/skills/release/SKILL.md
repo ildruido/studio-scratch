@@ -9,7 +9,7 @@ Never release from a branch or a red `main`. The build and ship steps depend on 
 
 ## Steps
 
-1. **Preconditions.** `git switch main && git pull`. Working tree clean. Latest CI run on `main` is green. CI on `main` runs only the quick checks after a merge (the PR ran the full suite), so start the full suite on `main` before releasing: run `CI` with `workflow_dispatch` (Actions > CI > Run workflow, or the `actions_run_trigger` tool) and wait for it to pass. Skip this if the last code change on `main` already had a manual full run. `CHANGELOG.md` has entries under `## [Unreleased]`. If not, stop and say why.
+1. **Preconditions.** Run `node .claude/studio/studio-sync.mjs release-gate`: it stops the release while the App profile's Access model is blank (ask Ale who can get in, record it, then continue). `git switch main && git pull`. Working tree clean. Latest CI run on `main` is green. CI on `main` runs only the quick checks after a merge (the PR ran the full suite), so start the full suite on `main` before releasing: run `CI` with `workflow_dispatch` (Actions > CI > Run workflow, or the `actions_run_trigger` tool) and wait for it to pass. Skip this if the last code change on `main` already had a manual full run. `CHANGELOG.md` has entries under `## [Unreleased]`. If not, stop and say why.
 2. **Pick the version** from the commits since the last release (`git log <last tag or release commit>..HEAD --oneline`):
    - Below 1.0.0: any `feat` or breaking change → bump MINOR; only `fix`/`perf` → bump PATCH.
    - From 1.0.0: breaking → MAJOR, `feat` → MINOR, otherwise PATCH.

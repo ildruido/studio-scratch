@@ -4,8 +4,9 @@
 //   node studio-sync.mjs install [--app <dir>] [--studio <dir>]   first copy into an app, plus templates
 //   node studio-sync.mjs check   [--app <dir>] [--studio <dir>] [--warn]
 //   node studio-sync.mjs health  [--app <dir>] [--studio <dir>]   is the harness sound? (pre-commit hook, CI)
+//   node studio-sync.mjs release-gate [--app <dir>]   exit 1 while the App profile's access model is blank (release skill)
 //   node studio-sync.mjs pull    [--app <dir>] [--studio <dir>] [--force]
-//   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs (packs/ in app-studio)
+//   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs or feature modules (packs/ in app-studio)
 //   node studio-sync.mjs pack remove <name...> [--force]   drop stack packs the app no longer uses
 //   node studio-sync.mjs ack [<path...>]    mark pack starter files as reviewed against app-studio
 //   node studio-sync.mjs hooks   [--app <dir>]   turn on the harness hooks that don't depend on where a session
@@ -115,10 +116,69 @@ export function livePending(studio) {
 
 const packDir = (studio, name) => join(studio, "packs", name);
 
+// A pack's `kind`: "stack" (how the app is built and shipped; the default) or "module" (a feature
+// the app opts into, e.g. `ai`). Both install the same way; the kind only tells them apart.
+const KINDS = ["stack", "module"];
+
 export function readPack(studio, name) {
   const file = join(packDir(studio, name), "pack.json");
   if (!existsSync(file)) throw new Error(`No pack named "${name}" in app-studio (packs/).`);
-  return JSON.parse(readFileSync(file, "utf8"));
+  const pack = JSON.parse(readFileSync(file, "utf8"));
+  if (pack.kind !== undefined && !KINDS.includes(pack.kind))
+    throw new Error(`Pack "${name}" has kind "${pack.kind}"; use ${KINDS.map((k) => `"${k}"`).join(" or ")}.`);
+  return pack;
+}
+
+export const packKind = (studio, name) => readPack(studio, name).kind ?? "stack";
+
+// Platform methods a module adds (its pack.json `platformMethods`, e.g. the ai module's `sample`).
+// An app that calls one without that module has old platform files that still declare it; new
+// starter files from app-studio would drop it and break the build, so pull holds them back.
+const CODE_DIRS = ["src", "tests", "e2e"];
+const CODE_FILE = /\.(ts|tsx|js|mjs)$/;
+
+/** Modules the app calls into without having them: [{ pack, methods }]. */
+export function missingModules(app, studio, packs) {
+  const wanted = listPacks(studio)
+    .filter((n) => !packs.includes(n))
+    .map((n) => ({ pack: n, methods: readPack(studio, n).platformMethods ?? [] }))
+    .filter((m) => m.methods.length);
+  if (!wanted.length) return [];
+  const code = CODE_DIRS.flatMap((d) => listFiles(join(app, d)))
+    .filter((f) => CODE_FILE.test(f))
+    .map((f) => readFileSync(f, "utf8"))
+    .join("\n");
+  return wanted
+    .map(({ pack, methods }) => ({
+      pack,
+      methods: methods.filter((m) => new RegExp(`\\.\\s*${m}\\s*\\(`).test(code)),
+    }))
+    .filter((m) => m.methods.length);
+}
+
+/** Why pull holds back starter files, or null: "the app calls sample() (ai module): run pack add ai first". */
+export function holdReason(missing) {
+  if (!missing.length) return null;
+  const calls = missing.map((m) => `${m.methods.map((x) => `${x}()`).join(", ")} (${m.pack} module)`).join("; ");
+  return `the app calls ${calls} but doesn't have the module: run pack add ${missing.map((m) => m.pack).join(" ")} first`;
+}
+
+/** Modules whose stack partner is missing (pack.json `alsoWith`: { "web": "ai-web" }). */
+export function partnerGaps(studio, packs) {
+  const gaps = [];
+  for (const n of packs) {
+    const also = readPack(studio, n).alsoWith ?? {};
+    for (const [stack, partner] of Object.entries(also))
+      if (packs.includes(stack) && !packs.includes(partner)) gaps.push(`${n} on ${stack} needs ${partner} too: run pack add ${partner}`);
+  }
+  return gaps;
+}
+
+/** Names split by kind, for messages: "artifact, base, web; modules: ai". */
+function byKind(studio, names) {
+  const modules = names.filter((n) => packKind(studio, n) === "module");
+  const stacks = names.filter((n) => !modules.includes(n));
+  return [stacks.join(", "), modules.length && `modules: ${modules.join(", ")}`].filter(Boolean).join("; ");
 }
 
 export function listPacks(studio) {
@@ -272,13 +332,18 @@ export function compare(app, studio) {
     for (const path of Object.keys(lock.files)) if (!(path in master)) report.removed.push(path);
     // Starter files are the app's own; a changed one in app-studio is a note, never drift.
     const vars = lock.app ?? defaultVars(app);
-    const starters = starterFiles(studio, Object.keys(lock.packs ?? {}), vars);
+    const packs = Object.keys(lock.packs ?? {});
+    const starters = starterFiles(studio, packs, vars);
+    const held = holdReason(missingModules(app, studio, packs));
+    if (held) report.held = held;
     for (const [path, rec] of Object.entries(lock.starters ?? {})) {
       const m = starters[path];
       if (!m || m.hash === rec.seen) continue;
       const cur = localHash(app, path);
-      report.starters.push({ path, pack: rec.pack, refreshable: cur === rec.installed });
+      report.starters.push({ path, pack: rec.pack, refreshable: !held && cur === rec.installed });
     }
+    report.newStarters = Object.keys(starters).filter((p) => !(p in (lock.starters ?? {})) && localHash(app, p) === null);
+    report.partners = partnerGaps(studio, packs);
   }
   return report;
 }
@@ -302,7 +367,7 @@ export function pull(app, studio, { force = false } = {}) {
   const packs = Object.keys(lock.packs ?? {});
   for (const name of packs) readPack(studio, name); // a pack gone from app-studio fails before any file moves
   const files = { ...lock.files };
-  const result = { written: [], deleted: [], skipped: [], refreshed: [], starterNotes: [] };
+  const result = { written: [], deleted: [], skipped: [], refreshed: [], starterNotes: [], created: [], held: [] };
   const master = masterFiles(studio, packs);
 
   for (const [path, { src, hash }] of Object.entries(master)) {
@@ -334,17 +399,31 @@ export function pull(app, studio, { force = false } = {}) {
     result.deleted.push(path);
   }
 
-  // Pack versions follow what was pulled; starters the app has not touched are refreshed, the
-  // others are noted for a manual merge (then `ack`).
+  // Pack versions follow what was pulled; starters the app has not touched are refreshed, ones a
+  // pack gained are created where nothing is in the way, the others are noted for a manual merge
+  // (then `ack`). All of that is held back while the app calls a module it doesn't have.
   const newLock = { ...lock, studio: studioVersion(studio), files };
   if (packs.length) {
     newLock.packs = Object.fromEntries(packs.map((n) => [n, readPack(studio, n).version]));
     const starters = starterFiles(studio, packs, lock.app ?? defaultVars(app));
     newLock.starters = { ...lock.starters };
+    result.holdReason = holdReason(missingModules(app, studio, packs));
+    for (const [path, m] of Object.entries(starters)) {
+      if (path in (lock.starters ?? {}) || localHash(app, path) !== null) continue;
+      if (result.holdReason) {
+        result.held.push(path);
+        continue;
+      }
+      mkdirSync(dirname(join(app, path)), { recursive: true });
+      writeFileSync(join(app, path), m.text);
+      newLock.starters[path] = { pack: m.pack, installed: m.hash, seen: m.hash };
+      result.created.push(path);
+    }
     for (const [path, rec] of Object.entries(lock.starters ?? {})) {
       const m = starters[path];
       if (!m || m.hash === rec.seen) continue;
-      if (localHash(app, path) === rec.installed) {
+      if (result.holdReason) result.held.push(path);
+      else if (localHash(app, path) === rec.installed) {
         writeFileSync(join(app, path), m.text);
         newLock.starters[path] = { pack: rec.pack, installed: m.hash, seen: m.hash };
         result.refreshed.push(path);
@@ -371,7 +450,7 @@ export function install(app, studio, opts) {
 
 /** Adds stack packs (and what they require): managed files, starter files, package.json entries. */
 export function addPacks(app, studio, names, { slug, title, force = false } = {}) {
-  if (!names.length) throw new Error("Name at least one pack. Available: " + listPacks(studio).join(", "));
+  if (!names.length) throw new Error("Name at least one pack. Available: " + byKind(studio, listPacks(studio)));
   const lock = readLockForPull(app, force);
   if (!lock.studio) throw new Error("Install the harness first (studio-sync.mjs install).");
   const defaults = defaultVars(app);
@@ -390,8 +469,8 @@ export function addPacks(app, studio, names, { slug, title, force = false } = {}
   });
   const result = pull(app, studio, { force });
   result.added = fresh;
-  result.created = [];
   result.kept = [];
+  result.partners = partnerGaps(studio, order);
   result.packageJson = mergePackageJson(app, studio, fresh, vars);
 
   const after = readLock(app);
@@ -409,6 +488,7 @@ export function addPacks(app, studio, names, { slug, title, force = false } = {}
     }
     after.starters = { ...after.starters, [path]: { pack: m.pack, installed: m.hash, seen: m.hash } };
   }
+  result.held = result.held.filter((path) => !(path in starters));
   writeLock(app, after);
   return result;
 }
@@ -515,19 +595,69 @@ const list = (label, paths) =>
     ? [`  ${label}: ${paths.length > 8 ? `${paths.slice(0, 6).join(", ")} and ${paths.length - 6} more` : paths.join(", ")}`]
     : [];
 
-/** Lines of the App profile (CLAUDE.md) that still hold a template placeholder such as `<App name>`. */
-export function profileGaps(app) {
+/** The App profile section of CLAUDE.md, or null when the file or section is missing. */
+function profileSection(app) {
   const file = join(app, "CLAUDE.md");
-  if (!existsSync(file)) return [];
+  if (!existsSync(file)) return null;
   const text = readFileSync(file, "utf8");
   const start = text.indexOf("## App profile");
-  if (start < 0) return [];
+  if (start < 0) return null;
   const end = text.indexOf("\n## ", start + 5);
-  const section = text.slice(start, end < 0 ? undefined : end);
+  return text.slice(start, end < 0 ? undefined : end);
+}
+
+/** The value cell of a profile table row (`| Field | value |`), or null when the row is missing. */
+function profileField(section, field) {
+  for (const line of section.split("\n")) {
+    const cells = line.replace(/\\\|/g, "\u0000").split("|").map((c) => c.replace(/\u0000/g, "|").trim());
+    if (cells[0] === "" && cells[1] === field) return cells[2] ?? "";
+  }
+  return null;
+}
+
+const isPlaceholder = (v) => /^`?<[^<>\n]{2,}>/.test(v);
+/** True when the profile row has no real answer: missing, empty or still the template placeholder. */
+const blankField = (v) => v === null || v === "" || isPlaceholder(v);
+
+/** Lines of the App profile (CLAUDE.md) that still hold a template placeholder such as `<App name>`. */
+export function profileGaps(app) {
+  const section = profileSection(app);
+  if (section === null) return [];
+  // The AI plan matters only for an app that uses AI.
+  const aiOff = /^off\b/i.test(profileField(section, "AI") ?? "");
   return section
     .split("\n")
     .filter((l) => /(\|\s*|\*\*\s*|^- |^)`?<[^<>\n]{2,}>/.test(l) && !/^Build, QA/.test(l))
+    .filter((l) => !(aiOff && /^\|\s*AI plan\s*\|/.test(l)))
     .map((l) => l.replace(/\s+/g, " ").trim().slice(0, 70));
+}
+
+/**
+ * Feature choices the App profile must record (Features rows): the harness asks and refuses to go on
+ * while they are blank, but never picks the answer. Placeholders are reported by profileGaps.
+ */
+export function featureGaps(app) {
+  const section = profileSection(app);
+  if (section === null) return [];
+  const gaps = [];
+  const ai = profileField(section, "AI");
+  if (ai === null || ai === "") gaps.push("the App profile has no AI row (on or off); ask the owner and record it");
+  else if (!isPlaceholder(ai) && !/^(on|off)\b/i.test(ai)) gaps.push(`the App profile's AI row must start with "on" or "off" (it says "${ai.slice(0, 40)}")`);
+  else if (/^on\b/i.test(ai) && blankField(profileField(section, "AI plan")))
+    gaps.push("AI is on, so the App profile needs an AI plan (whose plan or key pays, and the default model tier)");
+  for (const f of ["Access model", "Storage shape"])
+    if (blankField(profileField(section, f)) && !isPlaceholder(profileField(section, f) ?? ""))
+      gaps.push(`the App profile has no ${f} (${f === "Access model" ? "who can get in" : "per-person documents, shared documents, or something else"}); ask the owner and record it`);
+  return gaps;
+}
+
+/** Why a release must stop: the access model is missing or blank. Empty when it is recorded. */
+export function releaseBlockers(app) {
+  const section = profileSection(app);
+  if (section === null) return ["CLAUDE.md has no App profile, so the access model is not recorded"];
+  return blankField(profileField(section, "Access model"))
+    ? ["the App profile's Access model is blank. Ask the owner who can get in (only invited people, anyone who signs up, anyone with no login, or whoever the owner shares it with), record the answer, then release."]
+    : [];
 }
 
 // Hooks every app's .claude/settings.json must wire, as [event, part of the command].
@@ -710,7 +840,7 @@ export function health(app, studio) {
     problems.push('CLAUDE.md has no "## App profile" section (merge it from app-studio\'s templates/CLAUDE.md)');
   const gaps = profileGaps(app);
   if (gaps.length) problems.push(`the App profile in CLAUDE.md still has ${gaps.length} placeholder(s), for example:\n${gaps.slice(0, 3).map((g) => `      ${g}`).join("\n")}`);
-  problems.push(...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock));
+  problems.push(...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock));
   for (const [pack, file] of REQUIRED_STARTERS)
     if (lock.packs?.[pack] && !existsSync(join(app, file)))
       problems.push(`${file} is missing (the ${pack} pack's starter; copy it from app-studio's packs/${pack}/starter/)`);
@@ -761,10 +891,13 @@ function run(argv) {
       ? [
           "Pack starter files changed in app-studio (the app owns them; use the harness-sync skill):",
           ...r.starters.map(
-            (n) => `  ${n.path} (${n.pack} pack): ${n.refreshable ? "unedited here, pull refreshes it" : "edited here, merge by hand then run ack"}`,
+            (n) => `  ${n.path} (${n.pack} pack): ${n.refreshable ? "unedited here, pull refreshes it" : r.held ? "held back" : "edited here, merge by hand then run ack"}`,
           ),
         ]
       : [];
+    if (r.newStarters?.length) notes.push(...list(`pack starter files new in app-studio (${r.held ? "held back" : "pull adds them"})`, r.newStarters));
+    if (r.held && (r.starters.length || r.newStarters?.length)) notes.push(`Pack starter files are held back: ${r.held}.`);
+    if (r.partners?.length) notes.push(...r.partners.map((g) => `Module: ${g}.`));
     if (gaps.length)
       notes.push("The App profile in CLAUDE.md still has unfilled placeholders:", ...gaps.map((g) => `  ${g}`));
     if (!drift(r)) {
@@ -791,6 +924,16 @@ function run(argv) {
       : [`No studio harness lock in ${app} (${LOCK}). Install it with the new-app or harness-sync skill.`];
     console.log(lines.join("\n"));
     return opts.warn ? 0 : 1;
+  }
+
+  if (opts.cmd === "release-gate") {
+    const blockers = releaseBlockers(app);
+    if (!blockers.length) {
+      console.log("Release gate: the App profile records the access model.");
+      return 0;
+    }
+    console.log(["Release stopped:", ...blockers.map((b) => `  - ${b}`)].join("\n"));
+    return 1;
   }
 
   if (opts.cmd === "health") {
@@ -835,6 +978,8 @@ function run(argv) {
       ...list("deleted", r.deleted),
       ...list("added from templates", r.templates ?? []),
       ...list("pack starters refreshed", r.refreshed ?? []),
+      ...list("pack starters added (new in their pack)", r.created ?? []),
+      ...(r.held?.length ? [`  pack starters held back (${r.holdReason}): ${r.held.join(", ")}`] : []),
       ...list("pack starters changed upstream but edited here (merge by hand, then ack)", r.starterNotes ?? []),
       ...list("skipped (changed here; move the change to app-studio, or pass --force)", r.skipped),
     ];
@@ -876,11 +1021,12 @@ function run(argv) {
     }
     console.log(
       [
-        `Packs added to ${app}: ${r.added.join(", ") || "none new"}.`,
+        `Packs added to ${app}: ${byKind(studio, r.added) || "none new"}.`,
         ...list("managed files", r.written),
         ...list("starter files created", r.created),
         ...list("starter files kept (already there, different)", r.kept),
         ...list("package.json entries added", r.packageJson),
+        ...(r.partners ?? []).map((g) => `  module: ${g}`),
         ...list("skipped (changed here; pass --force)", r.skipped),
       ].join("\n"),
     );
