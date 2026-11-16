@@ -10,7 +10,6 @@ export const nullPlatform: Platform = {
   ...absentCapabilities(),
   hasRuntime: () => false,
   db: async () => null,
-  user: async () => null,
   downloads: async () => null,
 } as Platform;
 
