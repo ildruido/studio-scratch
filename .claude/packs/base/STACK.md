@@ -6,11 +6,11 @@ Every app starts from this. It gives the app the npm scripts the harness relies 
 
 Everything the page needs from its host is reached through `getPlatform()` in `src/platform/`. The page never calls `window.claude` or `/api/*` directly. Each build picks its adapter from `src/platform/adapters/` by `__TARGET__` (`artifact` or `web`); `startPlatform()` runs once in `src/main.ts`.
 
-- Every app's `Platform` has `hasRuntime()`, `db()` (documents), `user()` (who is signed in) and `downloads()`. Nothing else: a feature's capabilities come with its module (the `ai` module adds `sample()` and `permissionState()`), and code that calls one without its module doesn't compile.
+- Every app's `Platform` has `hasRuntime()`, `db()` (documents) and `downloads()`. Nothing else: a feature's capabilities come with its module (the `user` module adds `user()`, who is signed in; the `ai` module adds `sample()` and `permissionState()`), and code that calls one without its module doesn't compile.
 - A module adds a capability with one file in `src/platform/capabilities/` (declares the methods on `Platform`, says how the artifact runtime serves them, gives a fake); `src/platform/registry.ts` collects them for `nullPlatform`, `fakePlatform()` and the adapters. On the web a provider in `src/platform/web-providers/` serves them. See `packs/README.md` in app-studio, "Platform capabilities".
 - Every getter resolves `null` when the host cannot do that thing (a capability no adapter serves resolves `null` too). Features must render and explain themselves without it.
 - A change to the four base members goes to `Platform` first, then to every adapter in the same change, so the artifact and web builds stay interchangeable.
-- Unit tests use `fakePlatform()` from `src/platform/fake.ts` (in-memory documents plus each module's fake; pass members to replace, e.g. `fakePlatform({ user })`); no test calls a real model or a real host.
+- Unit tests use `fakePlatform()` from `src/platform/fake.ts` (in-memory documents plus each module's fake; pass members to replace, e.g. `fakePlatform({ downloads })`); no test calls a real model or a real host.
 
 ## Files
 
