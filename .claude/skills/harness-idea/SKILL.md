@@ -10,10 +10,10 @@ Apps never change `app-studio`. They send ideas; a Project or session that works
 ## Steps
 
 1. **Is it about the harness?** Something only this app needs belongs in its App profile (`CLAUDE.md`) or in the app's own skills, not in an idea.
-2. **Look for the same idea.** List the open issues labelled `harness-idea` on the app-studio repo (owner and name from `git -C <app-studio folder> remote get-url origin`). If one already covers it, add a comment with this app's evidence and stop.
-3. **Open an issue** on the app-studio repo:
-   - Title: `<area>: <the idea in one line>`, where the area is a skill, agent, hook, template or pack name.
-   - Label: `harness-idea`. If the label can't be set, start the title with `[harness-idea]`.
-   - Body: **What happened** (the app, the backlog item or PR, and what went wrong, was slow or was done by hand), **Why it's the harness** (which file or step), **Suggested change** (optional, a sentence or two), and the harness version from `.claude/studio/lock.json`.
+2. **Look for the same idea.** On the app-studio repo (owner and name from `git -C <app-studio folder> remote get-url origin`), check open issues labelled `harness-idea` **and** open issues whose title starts with `[harness-idea]` or that mention the same skill, agent, hook, template or pack name, labelled or not (an earlier idea may have lost its label). Include open `studio-backlog` issues: accepted work may already cover it. If one does, add a comment with this app's evidence and stop.
+3. **Open an issue** on the app-studio repo, with the same fields as its `Harness idea` issue template (the API doesn't apply templates, so fill them in yourself):
+   - Title: `[harness-idea] <area>: <the idea in one line>`, where the area is a skill, agent, hook, template or pack name.
+   - Label: `harness-idea`. If it can't be set, the title prefix is what keeps the idea findable.
+   - Body, with these headings: **App name**, **Harness version** (from `.claude/studio/lock.json`), **What happened** (the backlog item or PR, and what went wrong, was slow or was done by hand), **Why it's the harness** (which file or step), **Suggested change** (optional, a sentence or two). Never leave out the app name or the harness version.
 4. **Change nothing else.** Don't edit `app-studio`, and don't edit this app's copy of the harness: the health check blocks commits with edited harness files. If the problem blocks the current item, work around it in the app's own code or docs, or tell Ale.
 5. **Tell Ale** in one line, with the issue link.
