@@ -500,7 +500,22 @@ export function pull(app, studio, { force = false, patch = true } = {}) {
 // markers existed gets them once, where the known first and last lines of the section are found (`from`
 // to the line before `until`); if those lines aren't found it is left alone and reported.
 const OWNED_BEGIN = /^<!--\s*studio:begin\s+([\w-]+)\b.*-->\s*$/;
-const OWNED_LEGACY = { "merge-rule": { from: /^- \*\*Merging a PR\*\*/, until: /^- \*\*The checks\.\*\*/ } };
+// Exact wording the Roles bullets (first three) had in earlier templates, before they were harness-owned. Only an exact match is rewritten.
+const ROLES_KNOWN = [
+  // before 0.24.2, until e74cd26..78277da era (shorter "Ask Ale" line)
+  ["- **Ale (PM and tester).** Describes requirements, sets priority by ordering the backlog, tests releases and reports results. Ale does not write code, run commands or manage git. The few things only Ale can do (creating a repo, adding a repository secret, a host's settings) Claude hands over as exact clicks.",
+    "- **Claude (engineer).** Owns all code, tests, versioning, releases and the harness. Turns Ale's words into PRD and backlog changes, builds, ships and hands over a test script.",
+    "- Ask Ale only when a requirement is genuinely ambiguous or a decision is product-level. Everything technical is ours to decide; record the decision in the PR description or `docs/PRD.md` \"Decisions\"."],
+  // 0.23.x to 0.24.1
+  ["- **Ale (PM and tester).** Describes requirements, sets priority by ordering the backlog, tests releases and reports results. Ale does not write code, run commands or manage git. The few things only Ale can do (creating a repo, adding a repository secret, a host's settings) Claude hands over as exact clicks.",
+    "- **Claude (engineer).** Owns all code, tests, versioning, releases and the harness. Turns Ale's words into PRD and backlog changes, builds, ships and hands over a test script.",
+    "- Ask Ale only when a requirement is genuinely ambiguous or a decision is product-level. Ask one question at a time, each with a recommended answer and one line on why. Everything technical is ours to decide."],
+  // 0.24.2 (persona wording, not yet marked)
+  ["- **The App Creator (PM) and the Tester.** The App Creator is also the Tester unless someone else tests. The App Creator describes requirements and sets priority by ordering the backlog; the Tester tests releases and reports results. Neither writes code, runs commands or manages git. The few things only the Admin can do (creating a repo, adding a repository secret, a host's settings) Claude hands over as exact clicks.",
+    "- **Claude (engineer).** Owns all code, tests, versioning, releases and the harness. Turns the App Creator's words into PRD and backlog changes, builds, ships and hands over a test script.",
+    "- Ask the App Creator only when a requirement is genuinely ambiguous or a decision is product-level. Ask one question at a time, each with a recommended answer and one line on why. Everything technical is ours to decide."],
+];
+const OWNED_LEGACY = { "merge-rule": { from: /^- \*\*Merging a PR\*\*/, until: /^- \*\*The checks\.\*\*/ }, roles: { known: ROLES_KNOWN } };
 
 function ownedSection(lines, name) {
   const b = lines.findIndex((l) => OWNED_BEGIN.test(l) && l.match(OWNED_BEGIN)[1] === name);
@@ -532,6 +547,17 @@ function syncOwnedSections(lines, tplLines) {
       continue;
     }
     const legacy = OWNED_LEGACY[name];
+    if (legacy?.known) {
+      // Exact-match migration: the block is wrapped and replaced only when it is word for word a past template default.
+      const hit = legacy.known.map((k) => ({ k, at: lines.findIndex((x, i) => x === k[0] && k.every((y, n) => lines[i + n] === y)) })).find((h) => h.at >= 0);
+      if (!hit) {
+        done.push(`CLAUDE.md: section '${name}' has custom wording, so it was left alone; merge it by hand from the template (app-studio plugins/studio/templates/CLAUDE.md) or delete the Roles bullets and pull again`);
+        continue;
+      }
+      lines.splice(hit.at, hit.k.length, ...want);
+      done.push(`CLAUDE.md: harness-owned section '${name}' marked and updated to the template's wording`);
+      continue;
+    }
     const from = legacy ? lines.findIndex((x) => legacy.from.test(x)) : -1;
     const stop = from < 0 ? -1 : lines.findIndex((x, i) => i > from && (legacy.until.test(x) || /^##\s/.test(x)));
     const until = stop >= 0 && legacy.until.test(lines[stop]) ? stop : -1;
