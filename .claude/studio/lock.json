@@ -1,5 +1,5 @@
 {
-  "studio": "0.24.4",
+  "studio": "0.24.6",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -23,15 +23,15 @@
     ".claude/packs/artifact/STACK.md": "25ec0616e8819a0a4d89172503361ecf7a92f730ddbe2ee1bf69eea1a9afa11c",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "efe19a74e6b9a8d4c466891ab967f09a8f971a18e1fe84449982f5b659ebd880",
-    ".claude/skills/harness-idea/SKILL.md": "57915f9adfc8e1ca43c73bb3c5e62edfd3d7a98001e452bb3d5e4d78c600fe01",
-    ".claude/skills/harness-sync/SKILL.md": "71edb63f3d66357e269558936f348f033327b32e7a6a6ff142f9e19573b0aa0f",
-    ".claude/skills/migrate-app/SKILL.md": "2c7bedb6ef2994fcec549a68d5aeb331eea6d682cbec9166d18680255c411c2b",
+    ".claude/skills/build-feature/SKILL.md": "b88855893e8aeab095ecc1404e396f6e52e3cfbd1e9d86d59465879c35e47d9f",
+    ".claude/skills/harness-idea/SKILL.md": "aaaee87a31a038436caea7225c75069115f323ded1204377cbbfdd3a0d0175cd",
+    ".claude/skills/harness-sync/SKILL.md": "8960c803ba350a28bce26fb67390efffd931b31cd99d7ac6f2fbf7dddad84a72",
+    ".claude/skills/migrate-app/SKILL.md": "ad70df4aa26a89267b6317a243b212b90dba380cba911767aaf5f64b96996ecd",
     ".claude/skills/new-app/SKILL.md": "b7af781f6baa1f2a49582569ee2a529c6807397b56a17b5316a8d81b9d7f6e7f",
     ".claude/skills/prd-intake/SKILL.md": "8bc9ce55e161ada17e0a0f460d3cbf0f91bcd3d1839e4e838857614ee6b3ce3f",
     ".claude/skills/release/SKILL.md": "d705a68af8170b5c1ea7388c619a186807c40e88aecfec8b78042d32c1874720",
     ".claude/skills/test-handoff/SKILL.md": "5d64ad7b25aa94992c211dec974210c37d9e4512ac5983c26dfd80f1efa96086",
-    ".claude/studio/studio-sync.mjs": "a278d34243531fd40436e12d1189659b6b8076a4442f2e9cc22752c1de251fd7"
+    ".claude/studio/studio-sync.mjs": "4a25b1f7df73ff4a9906890632f23ca8e2d406ff31257e6985b4b96070e6cca3"
   },
   "starters": {
     ".gitattributes": {
