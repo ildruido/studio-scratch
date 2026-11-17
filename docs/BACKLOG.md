@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,14 @@
 _Nothing._
 
 ## To test
+
+### HT-008 Empty-state invites the first habit
+- Why: a new user should be invited to start, not instructed.
+- Acceptance criteria:
+  - [x] Given no habits, then the page says "No habits yet. Add your first habit above to get started."
+- Test script for Ale:
+  1. Open the app with no habits. Expected: the message reads "No habits yet. Add your first habit above to get started."
+  2. Add a habit. Expected: the message disappears.
 
 ### HT-006 Friendlier habit limit message
 - Why: the limit message reads like a system error; make it warmer.
