@@ -1,5 +1,5 @@
 {
-  "studio": "0.23.0",
+  "studio": "0.23.1",
   "packs": {
     "artifact": "0.4.0",
     "base": "0.9.0",
@@ -23,7 +23,7 @@
     ".claude/packs/artifact/STACK.md": "1d470fe8293028db6eddfaf28ef50ddc7743b51f7e5e87bb423081037dad86cf",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "ffe42bcd4ebeb2f635f8f797ec7c55b1bfa055ba5b8b2273de1b21428675b1dc",
+    ".claude/skills/build-feature/SKILL.md": "805814f1620f1be80e5906e9892857696e06c754c34b9cdd5313198c9824022c",
     ".claude/skills/harness-idea/SKILL.md": "017bebc32bde990d14d94e00c50bbf08599c388a3227892e94a09094271adcc6",
     ".claude/skills/harness-sync/SKILL.md": "63f8025edbe1a9188bff0a6f1bd5ff38289266272d0d81d41d07a3d0e00dc2fd",
     ".claude/skills/migrate-app/SKILL.md": "523bc2370b424ae1be3d018bd7e2ed8c1d0af179cae1cf6bff1528c8b8830e0a",
