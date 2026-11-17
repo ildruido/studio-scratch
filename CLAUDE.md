@@ -20,6 +20,7 @@ The skills and agents in `.claude/` are the shared studio harness, copied from `
 | AI plan        | none |
 | Access model   | `whoever the owner shares it with (artifact app)` (existing app: private artifact, no sign-in) |
 | Storage shape  | `per-person documents` (existing app: one person's habits and check-ins in `db`) |
+| Decision log   | `docs/PRD.md` "Decisions" (default; change it only if the app keeps its own decision log, and give its path) |
 
 ### Domain rules
 
@@ -146,3 +147,5 @@ In a Claude Code Project these are Project settings, which `new-app` asks the co
 ## Writing for Ale
 
 Plain English, no jargon. Lead with what changed for the user, then how to check it. Test scripts are numbered steps with an expected result each.
+
+Before saying something is done, check it, and say plainly what you did not check (for example, "no code tests ran" or "not tried on a phone").
