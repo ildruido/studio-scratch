@@ -9,6 +9,25 @@ description: Start a new app in Ale's studio - set up a fresh repo with the shar
 
 **Where this runs.** Best in a Claude Code Project on the "app-studio apps" cloud environment (app-studio `README.md`, "Start a new app"): the coordinator starts this skill in a thread and relays its questions. It also works in a cloud or local session with `app-studio` and the app repo side by side. Ale answers product questions only; everything else is decided here.
 
+## Discovery path (no stack chosen yet)
+
+For an app that has no stack, starter code or CI yet. It records "not decided yet" as `TBD` instead of made-up values.
+
+- Steps 1 and 3 as usual. Step 4: only `install` (no `pack add`, no `npm install`); then copy `app-studio/packs/base/starter/.github/workflows/harness.yml` and `.nvmrc` into the repo unchanged, so the `health` check runs on PRs (a later `pack add base` accepts them as they are).
+- Step 5: fill the App profile with **Phase `discovery`**, the real App name, Id prefix and Repo, and `TBD (decided at build start)` for every row the app can't answer yet (Stack, Release target, Preview target, Capabilities, AI, AI plan, Access model, Storage shape, AI public use, and the Domain rules and Stack notes lines). Never invent a value to satisfy the check. A real answer Ale already gave (a domain rule, "AI off") is recorded as such.
+- Step 8 as usual (`prd-intake`: `docs/PRD.md` and `docs/BACKLOG.md`; the AI, access and storage questions may be answered "not decided yet" and recorded as `TBD` in the decision log).
+- Step 9: `node .claude/studio/studio-sync.mjs check` and `health` only. Step 10: the ruleset requires only `health`; skip `CI gate`. In discovery `build-feature`, `test-handoff` and `release` stop on their own (`studio-sync.mjs phase --build-only`).
+- End with step 12's report and say the app is in discovery.
+
+## Start building (discovery to build)
+
+Run only when Ale says "start building" (never because a stack was merely mentioned):
+
+1. Ask Ale the step 2 product question (artifact prototype or web app), and decide the stack packs from it.
+2. `pack add <packs> --slug <repo> --title "<App name>"`, `npm install`, and steps 6, 7 and 9 as written.
+3. Replace every `TBD` in the App profile with a real answer (the AI, Access model and Storage shape questions are asked now, per `prd-intake` "Features"), set **Phase** to `build`, and run `health`: it fails while any `TBD` is left.
+4. Add `CI gate` to the ruleset's required checks (step 10's clicks), then step 11 and step 14.
+
 ## Steps
 
 1. **Check the setup.** List the repos beside `app-studio` in the start folder.
@@ -16,7 +35,7 @@ description: Start a new app in Ale's studio - set up a fresh repo with the shar
    - **The repo is attached but empty** (no commits, so no `main` to branch from or open a PR against): start `main` yourself with one GitHub call, `create_or_update_file` on the repo with path `README.md`, content `# <App name>`, message `chore: start the repo` and no branch (GitHub creates its default branch, `main`, from it). Then `git fetch origin` and branch from `origin/main`. If the session offers to create `main` instead, accept that. Don't ask Ale.
    - **The repo already exists with content** (for example after a discovery or inception phase with its own docs, skills and `CLAUDE.md`): read what is there first. Nothing is deleted: `install` and `pack add` never overwrite a file, and the existing docs become the input of step 8.
    - **Not on the "app-studio apps" environment** (no "Studio harness loaded" message at start-up): carry on, and add "select the cloud environment" to Ale's checklist in step 12.
-2. **Pick the start.** Ask Ale one product question: start as an artifact prototype (a private page in the Claude app, fastest to try), or go straight to a web app (own sign-in and hosting). Default: artifact prototype. Either way the app has a platform layer from day one, so the other build can come later without rewriting features. Once a web version exists, the artifact build stays as a prototype with smoke tests only. The answer picks the stack packs: `artifact`, `web`, or `web artifact` for a web app that keeps a prototype (the first pack named decides what `npm run build` builds).
+2. **Pick the start.** Ask Ale first: is the tech stack decided? **Not yet** (the app is still being shaped, or is docs only): take the **discovery path** (below) and skip steps 4's `pack add`, 6, 7, 9's npm commands, 10's required checks and 11. **Decided**: ask Ale one product question: start as an artifact prototype (a private page in the Claude app, fastest to try), or go straight to a web app (own sign-in and hosting). Default: artifact prototype. Either way the app has a platform layer from day one, so the other build can come later without rewriting features. Once a web version exists, the artifact build stays as a prototype with smoke tests only. The answer picks the stack packs: `artifact`, `web`, or `web artifact` for a web app that keeps a prototype (the first pack named decides what `npm run build` builds).
 3. **Branch.** Work in the app repo's folder beside `app-studio` (clone it there in a local session) on a branch (`chore/bootstrap`, or the session branch in a cloud session or Project thread).
 4. **Install the harness and the packs:**
    - If `install` or `pack add` stops with "not live-checked yet", app-studio's newest release is still awaiting its studio-scratch check and nothing was changed: tell Ale and stop (never pass `--live-check`; only the studio-scratch check does).

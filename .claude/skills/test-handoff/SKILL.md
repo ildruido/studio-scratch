@@ -9,6 +9,7 @@ App-specific facts come from the **App profile** in `CLAUDE.md`; `<XX>` below is
 
 ## Part A: write the script
 
+0. **Phase check (before either part).** Run `node .claude/studio/studio-sync.mjs phase --build-only`. If it stops (the App profile's Phase is `discovery`: no stack yet), tell Ale why in one line and stop; nothing here applies until the app starts building.
 1. Collect the items in **To test** in `docs/BACKLOG.md` and their acceptance criteria. If Ale tests in batches, cover every item still waiting in one combined script.
 2. Write at most 7 numbered steps per item, and at most 15 for a combined script, that cover every criterion, in the order a user would do them. Each step has:
    - **Do:** one concrete action in the app, with the exact text to type or button to press.

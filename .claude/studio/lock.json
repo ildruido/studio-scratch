@@ -1,5 +1,5 @@
 {
-  "studio": "0.21.2",
+  "studio": "0.22.0",
   "packs": {
     "artifact": "0.4.0",
     "base": "0.9.0",
@@ -22,15 +22,15 @@
     ".claude/packs/artifact/STACK.md": "1d470fe8293028db6eddfaf28ef50ddc7743b51f7e5e87bb423081037dad86cf",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "12d00ff9aeac207c6d6b4d923b3d039baf62402be429ce7ac99a2f851f18663d",
+    ".claude/skills/build-feature/SKILL.md": "ffe42bcd4ebeb2f635f8f797ec7c55b1bfa055ba5b8b2273de1b21428675b1dc",
     ".claude/skills/harness-idea/SKILL.md": "2e24c4181679d6f0ed2f0b3f3b1fd5530d3b1a23aba8bd8cda548e68cc36c3b7",
     ".claude/skills/harness-sync/SKILL.md": "b35147463c0c9dc0e93eaa3febd837ba748281d7e01e9ac75f5d02f557f1661a",
     ".claude/skills/migrate-app/SKILL.md": "523bc2370b424ae1be3d018bd7e2ed8c1d0af179cae1cf6bff1528c8b8830e0a",
-    ".claude/skills/new-app/SKILL.md": "4345c3488f1dae24e17dc210d0b4cd7d062a859458a30051af3762612b7fb2d8",
+    ".claude/skills/new-app/SKILL.md": "043954058c1638b7793150c9454d915c1a8e0eb37a7f9c09ab6f333994c2f943",
     ".claude/skills/prd-intake/SKILL.md": "45842e6784ed89ba838a3b9374ce3a03cca159db33ace659a04b2ab867190767",
-    ".claude/skills/release/SKILL.md": "22f3950560790f300c8bd5fb1ca8ec5274e7c65fd013d2f686b921fc485e73f5",
-    ".claude/skills/test-handoff/SKILL.md": "3b726d8708afa0e0a56dfc10ea5c03160b365876a11dfcee3512e7b05c6ed309",
-    ".claude/studio/studio-sync.mjs": "f201394e0f791522713265f8f01298c2bf0f0d4d24b3701969e1905c32829f2c"
+    ".claude/skills/release/SKILL.md": "f82078cb574222bdf4870aa152e37d6ead5ffd968f97ad81e68159214404fedd",
+    ".claude/skills/test-handoff/SKILL.md": "8837cb6ac42a1a496417ff3e2a0c9843e6bf0d44c069d8a4d2091ee7cba8de2a",
+    ".claude/studio/studio-sync.mjs": "a4456d35ebbb8ae5d12334a6064fa7c606699c1da3bc1d738913baa9a7ebb17e"
   },
   "starters": {
     ".gitattributes": {
