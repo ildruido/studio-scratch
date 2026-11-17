@@ -394,7 +394,7 @@ function readLockForPull(app, force) {
   }
 }
 
-export function pull(app, studio, { force = false } = {}) {
+export function pull(app, studio, { force = false, patch = true } = {}) {
   const lock = readLockForPull(app, force);
   const packs = Object.keys(lock.packs ?? {});
   for (const name of packs) readPack(studio, name); // a pack gone from app-studio fails before any file moves
@@ -467,11 +467,66 @@ export function pull(app, studio, { force = false } = {}) {
     }
   }
   writeLock(app, newLock);
+  result.patched = patch ? patchProfile(app, studio) : [];
   return result;
 }
 
+/**
+ * Template wording that apps must get through a routine pull, though CLAUDE.md is the app's own file:
+ * the App profile's "Decision log" row and the "say plainly what you did not check" line. Each is
+ * added only when missing, taken from the template, and never replaces or reorders app content.
+ */
+export function patchProfile(app, studio) {
+  const file = join(app, "CLAUDE.md");
+  const tpl = join(studio, "plugins/studio/templates/CLAUDE.md");
+  if (!existsSync(file) || !existsSync(tpl)) return [];
+  const crlf = readFileSync(file, "utf8").includes("\r\n");
+  const lines = readFileSync(file, "utf8").replace(/\r\n/g, "\n").split("\n");
+  const tplLines = readFileSync(tpl, "utf8").replace(/\r\n/g, "\n").split("\n");
+  const done = [];
+
+  const row = tplLines.find((l) => /^\|\s*Decision log\s*\|/.test(l));
+  const start = lines.findIndex((l) => /^##\s+App profile\b/.test(l));
+  if (row && start >= 0 && !lines.some((l) => /^\|\s*Decision log\s*\|/.test(l))) {
+    let last = -1;
+    let at = -1;
+    for (let i = start + 1; i < lines.length && !/^##\s/.test(lines[i]); i++) {
+      if (!lines[i].startsWith("|")) continue;
+      last = i;
+      if (/^\|\s*Storage shape\s*\|/.test(lines[i])) at = i;
+    }
+    if (at < 0) at = last;
+    if (at >= 0) {
+      lines.splice(at + 1, 0, row);
+      done.push("CLAUDE.md: App profile row 'Decision log' added (default: docs/PRD.md Decisions)");
+    }
+  }
+
+  const sentence = tplLines.find((l) => /did not check/i.test(l));
+  if (sentence && !lines.some((l) => /did not check/i.test(l))) {
+    const h = lines.findIndex((l) => /^##\s+Writing for Ale\b/.test(l));
+    if (h >= 0) {
+      let end = h + 1;
+      while (end < lines.length && !/^##\s/.test(lines[end])) end++;
+      while (end > h + 1 && lines[end - 1].trim() === "") end--;
+      lines.splice(end, 0, "", sentence);
+    } else {
+      while (lines.length && lines[lines.length - 1].trim() === "") lines.pop();
+      lines.push("", "## Writing for Ale", "", sentence, "");
+    }
+    done.push("CLAUDE.md: line 'say plainly what you did not check' added to Writing for Ale");
+  }
+
+  if (done.length) {
+    let text = lines.join("\n");
+    if (!text.endsWith("\n")) text += "\n";
+    writeFileSync(file, crlf ? text.replace(/\n/g, "\r\n") : text);
+  }
+  return done;
+}
+
 export function install(app, studio, opts) {
-  const result = pull(app, studio, opts);
+  const result = pull(app, studio, { ...opts, patch: false }); // a first copy never edits an app's own CLAUDE.md
   result.templates = [];
   for (const [from, to] of TEMPLATES) {
     if (existsSync(join(app, to))) continue;
@@ -1228,6 +1283,7 @@ function run(argv) {
       ...list("updated", r.written),
       ...list("deleted", r.deleted),
       ...list("added from templates", r.templates ?? []),
+      ...list("CLAUDE.md wording added (app text untouched; commit it with the sync)", r.patched ?? []),
       ...list("pack starters refreshed", r.refreshed ?? []),
       ...list("pack starters added (new in their pack)", r.created ?? []),
       ...(r.held?.length ? [`  pack starters held back (${r.holdReason}): ${r.held.join(", ")}`] : []),
