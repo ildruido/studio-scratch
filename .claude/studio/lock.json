@@ -9,6 +9,7 @@
     "slug": "studio-scratch",
     "title": "Habit Tracker"
   },
+  "instructions": "ce74c1b06d055a4f89417bc660632c9ef573e438664ac30c76a2fa774d550bef",
   "files": {
     ".claude/agents/planner.md": "12d740f0f5175f377d4243ff936f119a79b6c2d2302c7e7aebee6d8e09e2e3a0",
     ".claude/agents/qa.md": "d7a2df4d5c9172737b644d29d07b33c7cec14c314be0e879bab8b8d63a453862",
