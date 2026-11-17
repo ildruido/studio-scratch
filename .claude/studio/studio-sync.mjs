@@ -73,6 +73,25 @@ export function hashFile(file) {
   return hashText(readFileSync(file, "utf8"));
 }
 
+const INSTRUCTIONS_TEMPLATE = "plugins/studio/templates/project-instructions.md";
+
+/** Hash of the Project instructions template text (below its first `---` line), or null if absent. */
+export function instructionsHash(studio) {
+  const p = join(studio, INSTRUCTIONS_TEMPLATE);
+  if (!existsSync(p)) return null;
+  const text = readFileSync(p, "utf8").replace(/\r\n/g, "\n");
+  const i = text.indexOf("\n---\n");
+  return hashText((i < 0 ? text : text.slice(i + 5)).trim());
+}
+
+/** Lines telling an app its Project instructions may be behind the template, with a ready prompt. */
+export function instructionsNote() {
+  return [
+    "Project instructions template changed in app-studio (or this app never recorded a review). Project instructions live in Project settings, so a sync can't update them: ask your coordinator to compare and update. Ready prompt:",
+    `  "Compare this Project's instructions with app-studio's ${INSTRUCTIONS_TEMPLATE} (the text below its --- line). Add the rules that are missing or changed, keep everything specific to this app, never replace the whole text. Update the instructions yourself, tell Ale in one line what changed, then have a thread run: node .claude/studio/studio-sync.mjs ack instructions (and commit the lock)."`,
+  ];
+}
+
 function listFiles(dir, { dotfiles = false } = {}) {
   if (!existsSync(dir)) return [];
   // Dotfiles (.DS_Store, editor swap files) are never part of the harness; pack starters keep
@@ -327,6 +346,7 @@ function writeLock(app, lock) {
   const out = { studio: lock.studio };
   if (lock.packs && Object.keys(lock.packs).length) out.packs = sortKeys(lock.packs);
   if (lock.app) out.app = lock.app;
+  if (lock.instructions) out.instructions = lock.instructions;
   out.files = sortKeys(lock.files);
   if (lock.starters && Object.keys(lock.starters).length) out.starters = sortKeys(lock.starters);
   mkdirSync(dirname(join(app, LOCK)), { recursive: true });
@@ -377,6 +397,8 @@ export function compare(app, studio) {
     }
     report.newStarters = Object.keys(starters).filter((p) => !(p in (lock.starters ?? {})) && localHash(app, p) === null);
     report.partners = partnerGaps(studio, packs);
+    const ih = instructionsHash(studio);
+    report.instructionsChanged = !!ih && lock.instructions !== ih;
   }
   return report;
 }
@@ -529,6 +551,9 @@ export function patchProfile(app, studio) {
 export function install(app, studio, opts) {
   const result = pull(app, studio, { ...opts, patch: false }); // a first copy never edits an app's own CLAUDE.md
   result.templates = [];
+  const lock = readLock(app);
+  const ih = instructionsHash(studio);
+  if (lock && ih && !lock.instructions && !existsSync(join(app, "CLAUDE.md"))) writeLock(app, { ...lock, instructions: ih }); // a new app gets the current template pasted by new-app
   for (const [from, to] of TEMPLATES) {
     if (existsSync(join(app, to))) continue;
     mkdirSync(dirname(join(app, to)), { recursive: true });
@@ -627,9 +652,19 @@ export function removePacks(app, studio, names, { force = false } = {}) {
 /** Marks starter files as reviewed against app-studio: their notes stop until the next change. */
 export function ack(app, studio, paths = []) {
   const lock = readLock(app);
-  if (!lock?.starters) return [];
-  const starters = starterFiles(studio, Object.keys(lock.packs ?? {}), lock.app ?? defaultVars(app));
+  if (!lock) return [];
   const done = [];
+  const ih = instructionsHash(studio);
+  if (paths.includes("instructions") && ih && lock.instructions !== ih) {
+    lock.instructions = ih;
+    done.push("instructions");
+  }
+  paths = paths.filter((x) => x !== "instructions");
+  if (!lock.starters || (done.length && !paths.length)) {
+    if (done.length) writeLock(app, lock);
+    return done;
+  }
+  const starters = starterFiles(studio, Object.keys(lock.packs ?? {}), lock.app ?? defaultVars(app));
   for (const [path, rec] of Object.entries(lock.starters)) {
     if (paths.length && !paths.map((x) => x.replaceAll("\\", "/")).includes(path)) continue;
     const m = starters[path];
@@ -1249,6 +1284,7 @@ function run(argv) {
     if (r.newStarters?.length) notes.push(...list(`pack starter files new in app-studio (${r.held ? "held back" : "pull adds them"})`, r.newStarters));
     if (r.held && (r.starters.length || r.newStarters?.length)) notes.push(`Pack starter files are held back: ${r.held}.`);
     if (r.partners?.length) notes.push(...r.partners.map((g) => `Module: ${g}.`));
+    if (r.instructionsChanged) notes.push(...instructionsNote());
     if (gaps.length)
       notes.push("The App profile in CLAUDE.md still has unfilled placeholders:", ...gaps.map((g) => `  ${g}`));
     if (!drift(r)) {
@@ -1333,6 +1369,8 @@ function run(argv) {
       console.error(e.message);
       return 1;
     }
+    const lock = readLock(app);
+    const ih = instructionsHash(studio);
     const lines = [
       `Studio harness v${studioVersion(studio)} ${opts.cmd === "install" ? "installed in" : "pulled into"} ${app}.`,
       ...list("updated", r.written),
@@ -1344,6 +1382,7 @@ function run(argv) {
       ...(r.held?.length ? [`  pack starters held back (${r.holdReason}): ${r.held.join(", ")}`] : []),
       ...list("pack starters changed upstream but edited here (merge by hand, then ack)", r.starterNotes ?? []),
       ...list("skipped (changed here; move the change to app-studio, or pass --force)", r.skipped),
+      ...(opts.cmd === "pull" && ih && lock?.instructions !== ih ? instructionsNote() : []),
     ];
     console.log(lines.join("\n"));
     return r.skipped.length ? 1 : 0;
