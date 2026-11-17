@@ -15,7 +15,7 @@ Return, in this order and nothing else:
 3. **Tests**: which unit tests and which browser flows prove each acceptance criterion. Name the criterion each test covers.
 4. **Unspoken risks**: up to 5 inputs or situations the item and PRD don't mention but a real user will hit, most likely first (for example odd or very long text, several tabs or devices at once, a day boundary while the app is open, missing or corrupted saved data, a capability or network that is unavailable). For each: what a reasonable user expects, and which test in Tests pins it.
 5. **Trade-offs**: at most 3 real design choices, each with options and your recommendation.
-6. **Risks**: the stack notes' limits (bundle size, runtime rules), new capabilities or permissions (they trigger a consent prompt for Ale), AI-call cost on Ale's plan (only if the App profile says AI is on), and anything that could break a domain rule from the App profile.
-7. **Questions for Ale**: only product questions that change what gets built. Leave empty if none.
+6. **Risks**: the stack notes' limits (bundle size, runtime rules), new capabilities or permissions (they trigger a consent prompt for the App Creator), AI-call cost on the App Creator's plan (only if the App profile says AI is on), and anything that could break a domain rule from the App profile.
+7. **Questions for the App Creator**: only product questions that change what gets built. Leave empty if none.
 
 Keep it under 400 words. Prefer the simplest design that meets the acceptance criteria.
