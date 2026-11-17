@@ -1,6 +1,6 @@
 ---
 name: harness-idea
-description: Send an idea for improving the studio harness (a skill, agent, hook, template or stack pack) to app-studio as a GitHub issue, without changing app-studio. Use when work on an app shows the harness could do better, when a harness file seems wrong, or when Ale suggests a harness change while working on an app.
+description: Send an idea for improving the studio harness (a skill, agent, hook, template or stack pack) to app-studio as a GitHub issue, without changing app-studio. Use when work on an app shows the harness could do better, when a harness file seems wrong, or when the App Creator suggests a harness change while working on an app.
 ---
 
 # Harness idea
@@ -15,5 +15,5 @@ Apps never change `app-studio`. They send ideas; a Project or session that works
    - Title: `[harness-idea] <area>: <the idea in one line>`, where the area is a skill, agent, hook, template or pack name.
    - Label: `harness-idea`. If it can't be set, the title prefix is what keeps the idea findable.
    - Body, with these headings: **App name**, **Harness version** (from `.claude/studio/lock.json`), **What happened** (the backlog item or PR, and what went wrong, was slow or was done by hand), **Why it's the harness** (which file or step), **Suggested change** (optional, a sentence or two). Never leave out the app name or the harness version.
-4. **Change nothing else.** Don't edit `app-studio`, and don't edit this app's copy of the harness: the health check blocks commits with edited harness files. If the problem blocks the current item, work around it in the app's own code or docs, or tell Ale.
-5. **Tell Ale** in one line, with the issue link.
+4. **Change nothing else.** Don't edit `app-studio`, and don't edit this app's copy of the harness: the health check blocks commits with edited harness files. If the problem blocks the current item, work around it in the app's own code or docs, or tell the App Creator.
+5. **Tell the App Creator** in one line, with the issue link.

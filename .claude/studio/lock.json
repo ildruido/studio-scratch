@@ -1,7 +1,7 @@
 {
-  "studio": "0.24.0",
+  "studio": "0.24.2",
   "packs": {
-    "artifact": "0.4.0",
+    "artifact": "0.4.1",
     "base": "0.9.0",
     "user": "0.1.0"
   },
@@ -11,27 +11,27 @@
   },
   "instructions": "ce74c1b06d055a4f89417bc660632c9ef573e438664ac30c76a2fa774d550bef",
   "files": {
-    ".claude/agents/planner.md": "12d740f0f5175f377d4243ff936f119a79b6c2d2302c7e7aebee6d8e09e2e3a0",
-    ".claude/agents/qa.md": "d7a2df4d5c9172737b644d29d07b33c7cec14c314be0e879bab8b8d63a453862",
-    ".claude/agents/reviewer.md": "e47cf0bc04438e04107e6de31d8844607495196deb575a5caaded974cd4a56d1",
+    ".claude/agents/planner.md": "bc4199574b0b9f1cfbeb6070e656e187c023401194aa51d3d1b4e6a494f45092",
+    ".claude/agents/qa.md": "eaef43c62a41fef318a02f5a6b64430f598b5ed9e40fa94e571d32448e294f94",
+    ".claude/agents/reviewer.md": "600ad1033e7cb3640742d3dbee6f4e792b17ebc22c660a6b13bed06becdd260e",
     ".claude/hooks/check.mjs": "c6918e6618685ca9c32a38bfbe2c77377ad2600af77b79d97cb29e2c47271127",
     ".claude/hooks/cloud-setup.mjs": "6a856f37a92e047893486c9ee7061dcda45f29604b9459daad25b6784f32d1bd",
     ".claude/hooks/pre-commit": "54e4800a520596f24dba9cc538de614882ede7555ff45c083f8432402835866b",
     ".claude/packs/artifact/QA.md": "0e92e8ce0b15ddb8187102ecf96373d39f5851a397bebd509c30c3e66ed1e71b",
-    ".claude/packs/artifact/RELEASE.md": "c6e21d4d79aca000b979b51c12064713c78c7879f4fc0d54cc8e68b120c8f8b1",
+    ".claude/packs/artifact/RELEASE.md": "a7c25bdc5bb2b2346887428c9eb4d6332554725b779ff9cb27ab99b3c527290d",
     ".claude/packs/artifact/REVIEW.md": "50de96ee69e690edd07713a60c15ef37695d61ebe29157a8f6da8696612afe61",
-    ".claude/packs/artifact/STACK.md": "1d470fe8293028db6eddfaf28ef50ddc7743b51f7e5e87bb423081037dad86cf",
+    ".claude/packs/artifact/STACK.md": "25ec0616e8819a0a4d89172503361ecf7a92f730ddbe2ee1bf69eea1a9afa11c",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "805814f1620f1be80e5906e9892857696e06c754c34b9cdd5313198c9824022c",
-    ".claude/skills/harness-idea/SKILL.md": "017bebc32bde990d14d94e00c50bbf08599c388a3227892e94a09094271adcc6",
-    ".claude/skills/harness-sync/SKILL.md": "63f8025edbe1a9188bff0a6f1bd5ff38289266272d0d81d41d07a3d0e00dc2fd",
-    ".claude/skills/migrate-app/SKILL.md": "523bc2370b424ae1be3d018bd7e2ed8c1d0af179cae1cf6bff1528c8b8830e0a",
-    ".claude/skills/new-app/SKILL.md": "043954058c1638b7793150c9454d915c1a8e0eb37a7f9c09ab6f333994c2f943",
-    ".claude/skills/prd-intake/SKILL.md": "45842e6784ed89ba838a3b9374ce3a03cca159db33ace659a04b2ab867190767",
-    ".claude/skills/release/SKILL.md": "f82078cb574222bdf4870aa152e37d6ead5ffd968f97ad81e68159214404fedd",
-    ".claude/skills/test-handoff/SKILL.md": "8837cb6ac42a1a496417ff3e2a0c9843e6bf0d44c069d8a4d2091ee7cba8de2a",
-    ".claude/studio/studio-sync.mjs": "bfc45098198b39d9de3c5d367771c0855c29d1e2a049f520d6ac1809f3688cc7"
+    ".claude/skills/build-feature/SKILL.md": "efe19a74e6b9a8d4c466891ab967f09a8f971a18e1fe84449982f5b659ebd880",
+    ".claude/skills/harness-idea/SKILL.md": "57915f9adfc8e1ca43c73bb3c5e62edfd3d7a98001e452bb3d5e4d78c600fe01",
+    ".claude/skills/harness-sync/SKILL.md": "71edb63f3d66357e269558936f348f033327b32e7a6a6ff142f9e19573b0aa0f",
+    ".claude/skills/migrate-app/SKILL.md": "2c7bedb6ef2994fcec549a68d5aeb331eea6d682cbec9166d18680255c411c2b",
+    ".claude/skills/new-app/SKILL.md": "b7af781f6baa1f2a49582569ee2a529c6807397b56a17b5316a8d81b9d7f6e7f",
+    ".claude/skills/prd-intake/SKILL.md": "8bc9ce55e161ada17e0a0f460d3cbf0f91bcd3d1839e4e838857614ee6b3ce3f",
+    ".claude/skills/release/SKILL.md": "d705a68af8170b5c1ea7388c619a186807c40e88aecfec8b78042d32c1874720",
+    ".claude/skills/test-handoff/SKILL.md": "5d64ad7b25aa94992c211dec974210c37d9e4512ac5983c26dfd80f1efa96086",
+    ".claude/studio/studio-sync.mjs": "c99278296d09b729276cc45008ee3bbceb348494760a240674635b9215879a9e"
   },
   "starters": {
     ".gitattributes": {
