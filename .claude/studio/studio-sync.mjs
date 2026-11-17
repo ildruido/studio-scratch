@@ -1397,7 +1397,7 @@ function run(argv) {
           "Use the harness-sync skill to bring it in step.",
           ...notes,
         ]
-      : [`No studio harness lock in ${app} (${LOCK}). Install it with the new-app or harness-sync skill.`];
+      : [`No studio harness lock in ${app} (${LOCK}). Install it with the new-app skill (harness-sync only updates an app that already has it).`];
     console.log(lines.join("\n"));
     return opts.warn ? 0 : 1;
   }
