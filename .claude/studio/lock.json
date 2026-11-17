@@ -1,5 +1,5 @@
 {
-  "studio": "0.22.1",
+  "studio": "0.23.0",
   "packs": {
     "artifact": "0.4.0",
     "base": "0.9.0",
@@ -9,6 +9,7 @@
     "slug": "studio-scratch",
     "title": "Habit Tracker"
   },
+  "instructions": "ce74c1b06d055a4f89417bc660632c9ef573e438664ac30c76a2fa774d550bef",
   "files": {
     ".claude/agents/planner.md": "12d740f0f5175f377d4243ff936f119a79b6c2d2302c7e7aebee6d8e09e2e3a0",
     ".claude/agents/qa.md": "d7a2df4d5c9172737b644d29d07b33c7cec14c314be0e879bab8b8d63a453862",
@@ -24,13 +25,13 @@
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
     ".claude/skills/build-feature/SKILL.md": "ffe42bcd4ebeb2f635f8f797ec7c55b1bfa055ba5b8b2273de1b21428675b1dc",
     ".claude/skills/harness-idea/SKILL.md": "017bebc32bde990d14d94e00c50bbf08599c388a3227892e94a09094271adcc6",
-    ".claude/skills/harness-sync/SKILL.md": "350a85b2d2fa3d9964575e1aa5cd6383840c96ee358e6a7e2c971891033cb8a2",
+    ".claude/skills/harness-sync/SKILL.md": "63f8025edbe1a9188bff0a6f1bd5ff38289266272d0d81d41d07a3d0e00dc2fd",
     ".claude/skills/migrate-app/SKILL.md": "523bc2370b424ae1be3d018bd7e2ed8c1d0af179cae1cf6bff1528c8b8830e0a",
     ".claude/skills/new-app/SKILL.md": "043954058c1638b7793150c9454d915c1a8e0eb37a7f9c09ab6f333994c2f943",
     ".claude/skills/prd-intake/SKILL.md": "45842e6784ed89ba838a3b9374ce3a03cca159db33ace659a04b2ab867190767",
     ".claude/skills/release/SKILL.md": "f82078cb574222bdf4870aa152e37d6ead5ffd968f97ad81e68159214404fedd",
     ".claude/skills/test-handoff/SKILL.md": "8837cb6ac42a1a496417ff3e2a0c9843e6bf0d44c069d8a4d2091ee7cba8de2a",
-    ".claude/studio/studio-sync.mjs": "a4456d35ebbb8ae5d12334a6064fa7c606699c1da3bc1d738913baa9a7ebb17e"
+    ".claude/studio/studio-sync.mjs": "f4aeb420e06a670fe78894890dea1ced91ee6d4d5e6b0a2733dba0dc87b781b5"
   },
   "starters": {
     ".gitattributes": {
