@@ -914,6 +914,17 @@ function linkGaps(app, lock) {
   return gaps;
 }
 
+/** Backlog item ids used twice across docs/BACKLOG.md and docs/BACKLOG-DONE.md (issue #82). */
+export function idGaps(app) {
+  const seen = new Map();
+  for (const name of ["BACKLOG.md", "BACKLOG-DONE.md"]) {
+    const f = join(app, "docs", name);
+    if (!existsSync(f)) continue;
+    for (const m of readFileSync(f, "utf8").matchAll(/^#{2,4}[ \t]+([A-Z][A-Z0-9]*-\d+)\b/gm)) seen.set(m[1], [...(seen.get(m[1]) ?? []), name]);
+  }
+  return [...seen].filter(([, w]) => w.length > 1).map(([id, w]) => `backlog id ${id} is used ${w.length} times (${[...new Set(w)].join(", ")}): two items must not share an id; renumber the newer one, and every reference to it, to the next free id`);
+}
+
 /** { problems, notes }: problems fail the check, notes don't. */
 export function health(app, studio) {
   const problems = [];
@@ -933,7 +944,7 @@ export function health(app, studio) {
     problems.push('CLAUDE.md has no "## App profile" section (merge it from app-studio\'s templates/CLAUDE.md)');
   const gaps = profileGaps(app);
   if (gaps.length) problems.push(`the App profile in CLAUDE.md still has ${gaps.length} placeholder(s), for example:\n${gaps.slice(0, 3).map((g) => `      ${g}`).join("\n")}`);
-  problems.push(...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock));
+  problems.push(...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock), ...idGaps(app));
   for (const [pack, file] of REQUIRED_STARTERS)
     if (lock.packs?.[pack] && !existsSync(join(app, file)))
       problems.push(`${file} is missing (the ${pack} pack's starter; copy it from app-studio's packs/${pack}/starter/)`);
@@ -942,6 +953,50 @@ export function health(app, studio) {
   if (r.starters.length) notes.push(`pack starter files changed in app-studio: ${r.starters.map((n) => n.path).join(", ")}`);
   if (!studio) notes.push("app-studio not found, so the copy was checked against its lock only");
   return { problems, notes, version: r.version };
+}
+
+/** Signs that an app's AI is its own design, not the ai / ai-web modules (issue #114). */
+export function customAi(app, serverCode = "", studio = null) {
+  const found = [];
+  const own = [...new Set([...serverCode.matchAll(/["'`]\/api\/(coach|ai|chat|assistant)[\w/-]*/g)].map((m) => m[0].slice(1)))];
+  if (own.length) found.push(`own AI route(s) ${own.join(", ")}`);
+  const files = ["src", "tests"].flatMap((d) => listFiles(join(app, d))).filter((f) => CODE_FILE.test(f));
+  // Files that are exact copies of an ai / ai-web (any module) starter are the standard module, not a custom design.
+  const standard = new Map();
+  if (studio) {
+    const vars = readLock(app)?.app ?? defaultVars(app);
+    for (const name of listPacks(studio).filter((n) => packKind(studio, n) === "module"))
+      for (const [path, m] of Object.entries(starterFiles(studio, [name], vars))) standard.set(path, m.hash);
+  }
+  const odd = files.filter((f) => {
+    const rel = toPosix(relative(app, f));
+    if (standard.get(rel) === hashFile(f)) return false;
+    const t = readFileSync(f, "utf8");
+    return rel.startsWith("src/platform/") ? /\bsample\s*\(\s*[^)\s]/.test(t) || /\bsample\s*[:=]\s*(?:async\s*)?\(\s*[^)\s]/.test(t) : /\.sample\(\s*[^)\s]/.test(t);
+  });
+  if (odd.length) found.push(`sample() takes an input of the app's own (the module's takes none): ${odd.slice(0, 3).map((f) => toPosix(relative(app, f))).join(", ")}`);
+  const ledger = listFiles(join(app, "server/migrations")).some((f) => /CREATE TABLE(?: IF NOT EXISTS)?\s+(?!ai_usage\b)\w*usage\w*/i.test(readFileSync(f, "utf8")));
+  if (ledger && found.length) found.push("its own usage ledger table");
+  return found;
+}
+
+/** The CI workflows' job names, and workflows whose pull_request trigger can skip the whole run (issue #114). */
+export function ciFindings(app) {
+  const jobs = [], warnings = [];
+  for (const f of listFiles(join(app, ".github/workflows")).filter((x) => /\.ya?ml$/.test(x))) {
+    const t = readFileSync(f, "utf8");
+    const file = basename(f);
+    const jobsAt = t.search(/^jobs:\s*$/m);
+    if (jobsAt >= 0)
+      for (const m of t.slice(jobsAt).matchAll(/^  ([\w-]+):\s*\n((?:    .*\n|\s*\n)*)/gm)) {
+        const nm = m[2].match(/^    name:\s*["']?([^"'\n#]+?)["']?\s*(?:#.*)?$/m)?.[1];
+        jobs.push(`${nm ?? m[1]} (${file})`);
+      }
+    const pr = t.match(/^  pull_request(?:_target)?:\s*\n((?:    .*\n|\s*\n)*)/m);
+    if (pr && /^\s+paths(?:-ignore)?:/m.test(pr[1]))
+      warnings.push(`${file} skips pull requests by file path (paths / paths-ignore on pull_request): on a notes-only PR the workflow never starts, so a required check from it stays "expected" and blocks auto-merge. Make it start on every PR (filter inside the jobs instead).`);
+  }
+  return { jobs, warnings };
 }
 
 /**
@@ -981,7 +1036,16 @@ export function inventory(app, studio) {
   const mode = read("render.yaml").match(/key:\s*SIGN_IN_MODE\s*\n\s*value:\s*["']?([^"'\n#\s]*)/)?.[1] ?? read(".github/workflows/ci.yml").match(/^\s*SIGN_IN_MODE:\s*["']?([^"'\n#\s]*)/m)?.[1];
   if (web) out.push(`  sign-in mode setting: ${mode ? mode : "not set (the server then means invite-only, today's behaviour)"}`);
   out.push(`  roadmap tooling: ${has("scripts/roadmap") ? "present (the app's own; keep it as it is, do not add the roadmap module)" : "none"}`);
-  out.push(`  modules to switch on: ${need.length ? need.join(", ") : "none"}`);
+  const custom = customAi(app, serverCode, studio);
+  if (custom.length) {
+    out.push(
+      `  CUSTOM AI DESIGN found: ${custom.join("; ")}`,
+      "  -> NOT a drop-in for the ai / ai-web modules. Switching them on replaces the app's platform and server files and breaks its AI tests; it needs a redesign of the app's AI, decided separately.",
+      "  -> Recommended path: HARNESS ONLY (pull the harness files, record the profile, leave the app's AI and platform code alone; the module swap is a later, separate decision).",
+    );
+  }
+  const toSwitch = custom.length ? [] : need;
+  out.push(`  modules to switch on: ${custom.length ? `none for now (harness only; a redesign would be needed before ${need.join(", ") || "ai, ai-web"})` : need.length ? need.join(", ") : "none"}`);
   const moduleOf = (n) => { try { return packKind(studio, n) === "module"; } catch { return false; } };
   const modulesOn = locked.filter(moduleOf);
   out.push("", "Modules", `  on now: ${modulesOn.length ? modulesOn.join(", ") : "none"}${modulesOn.includes("user") ? " (user = who is signed in)" : ""}`);
@@ -990,7 +1054,7 @@ export function inventory(app, studio) {
   out.push(`  sign-in mode: ${web ? (mode ? mode : "not set (the server then means invite-only)") : "not applicable (no server)"}`);
 
   // Starter files of the packs the app will have, compared with what the app holds today.
-  const target = packClosure(studio, [...new Set([...packs, ...need])]);
+  const target = packClosure(studio, [...new Set([...packs, ...toSwitch])]);
   const starters = starterFiles(studio, target, lock?.app ?? defaultVars(app));
   const absent = [], differs = [], same = [];
   for (const [path, m] of Object.entries(starters)) {
@@ -1002,6 +1066,9 @@ export function inventory(app, studio) {
   const flows = listFiles(join(app, ".github/workflows")).map((f) => basename(f));
   out.push("", "CI", `  workflows: ${flows.join(", ") || "none"}`);
   if (!has(".github/workflows/harness.yml")) out.push("  harness.yml is missing (pull adds it as a new starter)");
+  const ci = ciFindings(app);
+  out.push(`  job names (the required checks must use the app's own): ${ci.jobs.length ? ci.jobs.join(", ") : "none found"}`);
+  out.push(...ci.warnings.map((w) => `  WARNING: ${w}`));
 
   // Database: an AI usage table under another name would not be reused by ai_001_usage.sql.
   const usage = new Set();
@@ -1010,14 +1077,16 @@ export function inventory(app, studio) {
   if (web) {
     out.push("", "Database");
     const odd = [...usage].filter((t) => t !== "ai_usage");
-    out.push(
+    if (usage.has("ai_usage") && odd.length) {
+      out.push(`  ${odd.join(", ")} and ai_usage both exist (a rename or copy already under way): ai_usage is the module's table; check the allowance data is in it, then ${odd.join(", ")} can be retired later`);
+    } else out.push(
       usage.size === 0 ? "  no usage table in the migrations (ai_001_usage.sql creates one)" : odd.length ? `  usage table(s) named ${odd.join(", ")}: NOT the module's ai_usage. Stop and ask the owner before migrating (the allowance data would not carry over)` : "  ai_usage and monthly_allowance exist: ai_001_usage.sql changes nothing",
     );
   }
 
   const gaps = [...featureGaps(app), ...profileGaps(app)];
   const prof = profileSection(app);
-  const answer = (f) => { const v = prof === null ? null : profileField(prof, f); return v === null ? "no row" : blankField(v) ? "not filled in" : v.replace(/^`|`$/g, ""); };
+  const answer = (f) => { const v = prof === null ? null : profileField(prof, f); return v === null ? "no row" : blankField(v) ? "not filled in" : v.replace(/`/g, ""); };
   out.push("", "App profile (CLAUDE.md)");
   if (prof !== null)
     out.push(`  AI: ${answer("AI") === "no row" || answer("AI") === "not filled in" ? answer("AI") : aiValue(prof)}`, `  Access model (who can get in): ${answer("Access model")}`, `  Storage shape: ${answer("Storage shape")}`);
@@ -1025,7 +1094,7 @@ export function inventory(app, studio) {
   out.push(
     "",
     "Suggested order (one branch, one PR; the way back is reverting it)",
-    "  1. pull, and when it says starter files are held back, add the modules in the same branch" + (need.length ? `: pack add ${need.join(" ")}` : ""),
+    "  1. pull, and when it says starter files are held back, add the modules in the same branch" + (toSwitch.length ? `: pack add ${toSwitch.join(" ")}` : custom.length ? " (custom AI: harness only, add no AI module)" : ""),
     "  2. merge the files listed as differing, then ack; run npm run check (and the server checks on the web)",
     "  3. record AI on / AI plan / Access model / Storage shape in the App profile; health must pass",
     "  4. prove it: the tests pass and one small follow-up PR merges by itself",
