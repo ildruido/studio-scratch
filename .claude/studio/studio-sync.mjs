@@ -494,6 +494,56 @@ export function pull(app, studio, { force = false, patch = true } = {}) {
   return result;
 }
 
+// Harness-owned sections of the app's CLAUDE.md: the template wraps them in
+// `<!-- studio:begin NAME ... -->` / `<!-- studio:end NAME -->`, and a pull replaces what is between the
+// markers with the template's text. Everything outside the markers stays the app's. An app from before the
+// markers existed gets them once, where the known first and last lines of the section are found (`from`
+// to the line before `until`); if those lines aren't found it is left alone and reported.
+const OWNED_BEGIN = /^<!--\s*studio:begin\s+([\w-]+)\b.*-->\s*$/;
+const OWNED_LEGACY = { "merge-rule": { from: /^- \*\*Merging a PR\*\*/, until: /^- \*\*The checks\.\*\*/ } };
+
+function ownedSection(lines, name) {
+  const b = lines.findIndex((l) => OWNED_BEGIN.test(l) && l.match(OWNED_BEGIN)[1] === name);
+  if (b < 0) return null;
+  const e = lines.findIndex((l, i) => i > b && new RegExp(`^<!--\\s*studio:end\\s+${name}\\s*-->\\s*$`).test(l));
+  return e < 0 ? null : { b, e };
+}
+
+/** Brings the template's harness-owned sections into `lines` (edited in place); returns what changed. */
+export function syncOwnedSections(lines, tplLines) {
+  const done = [];
+  for (const l of tplLines) {
+    const m = l.match(OWNED_BEGIN);
+    if (!m) continue;
+    const name = m[1];
+    const t = ownedSection(tplLines, name);
+    if (!t) continue;
+    const want = tplLines.slice(t.b, t.e + 1);
+    const mine = ownedSection(lines, name);
+    if (mine) {
+      const have = lines.slice(mine.b, mine.e + 1);
+      if (have.join("\n") !== want.join("\n")) {
+        lines.splice(mine.b, have.length, ...want);
+        done.push(`CLAUDE.md: harness-owned section '${name}' updated to the template's wording`);
+      }
+      continue;
+    }
+    const legacy = OWNED_LEGACY[name];
+    const from = legacy ? lines.findIndex((x) => legacy.from.test(x)) : -1;
+    const stop = from < 0 ? -1 : lines.findIndex((x, i) => i > from && (legacy.until.test(x) || /^##\s/.test(x)));
+    const until = stop >= 0 && legacy.until.test(lines[stop]) ? stop : -1;
+    if (until < 0) {
+      done.push(`CLAUDE.md: section '${name}' not found where expected; merge it by hand from the template (app-studio plugins/studio/templates/CLAUDE.md)`);
+      continue;
+    }
+    let end = until;
+    while (end > from + 1 && lines[end - 1].trim() === "") end--;
+    lines.splice(from, end - from, ...want);
+    done.push(`CLAUDE.md: harness-owned section '${name}' marked and updated to the template's wording`);
+  }
+  return done;
+}
+
 /**
  * Template wording that apps must get through a routine pull, though CLAUDE.md is the app's own file:
  * the App profile's "Decision log" row and the "say plainly what you did not check" line. Each is
@@ -539,6 +589,8 @@ export function patchProfile(app, studio) {
     }
     done.push("CLAUDE.md: line 'say plainly what you did not check' added to Writing for Ale");
   }
+
+  done.push(...syncOwnedSections(lines, tplLines));
 
   if (done.length) {
     let text = lines.join("\n");
