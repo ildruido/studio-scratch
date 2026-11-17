@@ -6,6 +6,7 @@
 //   node studio-sync.mjs inventory [--app <dir>] [--studio <dir>]   read-only look at an existing app before it migrates (migrate-app skill)
 //   node studio-sync.mjs health  [--app <dir>] [--studio <dir>]   is the harness sound? (pre-commit hook, CI)
 //   node studio-sync.mjs release-gate [--app <dir>]   exit 1 while the access model, or an AI public use decision it needs, is blank (release skill)
+//   node studio-sync.mjs phase   [--app <dir>] [--build-only]   print the App profile's Phase (discovery | build); --build-only exits 1 in discovery (build-feature, release, test-handoff)
 //   node studio-sync.mjs pull    [--app <dir>] [--studio <dir>] [--force]
 //   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs or feature modules (packs/ in app-studio)
 //   node studio-sync.mjs pack remove <name...> [--force]   drop stack packs the app no longer uses
@@ -647,6 +648,7 @@ function parseArgs(argv) {
     if (a === "--warn") opts.warn = true;
     else if (a === "--live-check") opts.liveCheck = true;
     else if (a === "--force") opts.force = true;
+    else if (a === "--build-only") opts.buildOnly = true;
     else if (["--app", "--studio", "--slug", "--title"].includes(a)) opts[a.slice(2)] = argv[++i];
     else if (a.startsWith("--")) throw new Error(`Unknown argument: ${a}`);
     else opts.rest.push(a);
@@ -711,6 +713,45 @@ const isPlaceholder = (v) => /^`?<[^<>\n]{2,}>/.test(v);
 /** True when the profile row has no real answer: missing, empty or still the template placeholder. */
 const blankField = (v) => v === null || v === "" || isPlaceholder(v);
 
+/** "Not decided yet" (#69): `TBD`, optionally with where it gets decided, e.g. `TBD (decided at build start)`. */
+const isTbd = (v) => /^`?TBD\b/i.test((v ?? "").trim());
+
+/**
+ * The App profile's Phase: `discovery` (no stack yet; fields may say TBD) or `build`. A missing or
+ * empty Phase row means `build`, so an app that predates the row behaves as before. Anything else is
+ * reported by phaseProblems; it counts as `build` here, the stricter reading.
+ */
+export function phaseOf(app) {
+  const section = profileSection(app);
+  const v = (section === null ? null : profileField(section, "Phase"))?.replace(/`/g, "").trim().toLowerCase();
+  return v === "discovery" ? "discovery" : "build";
+}
+
+const DISCOVERY_STOP =
+  "this app is in discovery (App profile, Phase): no stack is chosen, so there is nothing to build, test or release yet. Finish the requirements, then Ale says \"start building\" and the new-app skill's \"Start building\" section switches Phase to build";
+
+/** Fields that must be real even in discovery: they identify the app. */
+const IDENTITY_FIELDS = ["App", "Id prefix", "Repo", "Phase"];
+
+/** Problems with the Phase row and with TBD values, for health. */
+export function phaseProblems(app) {
+  const section = profileSection(app);
+  if (section === null) return [];
+  const raw = profileField(section, "Phase");
+  const v = raw?.replace(/`/g, "").trim().toLowerCase() ?? "";
+  if (raw !== null && raw !== "" && !isPlaceholder(raw) && !/^(discovery|build)$/.test(v))
+    return [`the App profile's Phase must be "discovery" or "build" (it says "${raw.slice(0, 40)}")`];
+  const tbds = [];
+  for (const line of section.split("\n")) {
+    const cells = line.replace(/\\\|/g, "\u0000").split("|").map((c) => c.replace(/\u0000/g, "|").trim());
+    if (cells[0] === "" && cells.length > 2 && isTbd(cells[2])) tbds.push(cells[1]);
+    else if (/^- (\*\*[^*]+:\*\*\s*)?TBD\b/i.test(line)) tbds.push(line.slice(0, 40));
+  }
+  if (phaseOf(app) === "build") return tbds.length ? [`the App profile still says TBD in build: ${tbds.join(", ")}. Decide each one and record it, or set Phase to discovery if the app really has no stack yet`] : [];
+  const bad = IDENTITY_FIELDS.filter((f) => tbds.includes(f));
+  return bad.length ? [`the App profile may not say TBD for ${bad.join(", ")}: they identify the app`] : [];
+}
+
 /**
  * True when the app uses AI and anyone can get in (open sign-up or no login), so anyone can spend
  * its AI: the owner must record an AI public use decision (Ale, #88). The harness never picks it.
@@ -748,7 +789,10 @@ export function featureGaps(app) {
   if (section === null) return [];
   const gaps = [];
   const ai = aiValue(section);
-  if (ai === null || ai === "") gaps.push("the App profile has no AI row (on or off); ask the owner and record it");
+  // In discovery the choices may be "not decided yet"; build and release still need them (#69).
+  if (phaseOf(app) === "discovery" && isTbd(ai)) {
+    /* not decided yet */
+  } else if (ai === null || ai === "") gaps.push("the App profile has no AI row (on or off); ask the owner and record it");
   else if (!isPlaceholder(ai) && !/^(on|off)\b/i.test(ai)) gaps.push(`the App profile's AI row must start with "on" or "off" (it says "${ai.slice(0, 40)}")`);
   else if (/^on\b/i.test(ai) && blankField(profileField(section, "AI plan")))
     gaps.push("AI is on, so the App profile needs an AI plan (whose plan or key pays, and the default model tier)");
@@ -767,6 +811,7 @@ export function featureGaps(app) {
 export function releaseBlockers(app) {
   const section = profileSection(app);
   if (section === null) return ["CLAUDE.md has no App profile, so the access model is not recorded"];
+  if (phaseOf(app) === "discovery") return [DISCOVERY_STOP];
   if (blankField(profileField(section, "Access model")))
     return ["the App profile's Access model is blank. Ask the owner who can get in (only invited people, anyone who signs up, anyone with no login, or whoever the owner shares it with), record the answer, then release."];
   const blockers = signInModeMismatches(app, section);
@@ -999,7 +1044,7 @@ export function health(app, studio) {
     problems.push('CLAUDE.md has no "## App profile" section (merge it from app-studio\'s templates/CLAUDE.md)');
   const gaps = profileGaps(app);
   if (gaps.length) problems.push(`the App profile in CLAUDE.md still has ${gaps.length} placeholder(s), for example:\n${gaps.slice(0, 3).map((g) => `      ${g}`).join("\n")}`);
-  problems.push(...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock), ...idGaps(app));
+  problems.push(...phaseProblems(app), ...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock), ...idGaps(app));
   for (const [pack, file] of REQUIRED_STARTERS)
     if (lock.packs?.[pack] && !existsSync(join(app, file)))
       problems.push(`${file} is missing (the ${pack} pack's starter; copy it from app-studio's packs/${pack}/starter/)`);
@@ -1242,6 +1287,16 @@ function run(argv) {
     return 1;
   }
 
+  if (opts.cmd === "phase") {
+    const phase = phaseOf(app);
+    if (opts.buildOnly && phase === "discovery") {
+      console.log(`Stopped: ${DISCOVERY_STOP}.`);
+      return 1;
+    }
+    console.log(phase);
+    return 0;
+  }
+
   if (opts.cmd === "health") {
     const h = health(app, studio);
     const notes = h.notes.map((n) => `  note: ${n}`);
@@ -1361,7 +1416,7 @@ function run(argv) {
     return 0;
   }
 
-  console.error("Usage: studio-sync.mjs <install|check|inventory|health|pull|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force] [--live-check]");
+  console.error("Usage: studio-sync.mjs <install|check|inventory|health|phase|pull|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force] [--live-check]");
   return 2;
 }
 

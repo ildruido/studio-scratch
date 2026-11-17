@@ -9,6 +9,7 @@ App-specific facts (id prefix, stack, domain rules, stack notes) come from the *
 
 ## Steps
 
+0. **Phase check.** Run `node .claude/studio/studio-sync.mjs phase --build-only`. If it stops (the App profile's Phase is `discovery`: no stack yet), tell Ale why in one line and stop; nothing here applies until the app starts building.
 1. **Pick the item.** Take the top item under **Ready** in `docs/BACKLOG.md` (or the id Ale named). If Ready is empty, run `prd-intake` on what Ale asked for first.
 2. **Sync and branch.** `git switch main && git pull`, then `git switch -c feat/<XX>-0NN-short-slug` (`fix/` for bugs). In a cloud session use the session branch instead (CLAUDE.md "Cloud sessions"). Move the item to **In progress**.
 3. **Plan.** For anything beyond a one-file change, run the `planner` agent with the item text. Resolve its open questions using CLAUDE.md rules; ask Ale only for product-level questions.
