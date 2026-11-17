@@ -1161,7 +1161,7 @@ export function health(app, studio) {
   }
   if (!r.installed) return { problems: [`no studio harness lock (${LOCK}); install it with the new-app skill`], notes };
   const lock = readLock(app);
-  if (r.edited.length) problems.push(`shared harness files edited here (change them in app-studio, then harness-sync): ${r.edited.join(", ")}`);
+  if (r.edited.length) problems.push(`shared harness files edited here (never edit them here: send a harness-idea to app-studio, then harness-sync restores the shared version): ${r.edited.join(", ")}`);
   if (r.missing.length) problems.push(`shared harness files missing here (harness-sync pull restores them): ${r.missing.join(", ")}`);
   if (!existsSync(join(app, "CLAUDE.md"))) problems.push("CLAUDE.md is missing");
   else if (!readFileSync(join(app, "CLAUDE.md"), "utf8").includes("## App profile"))

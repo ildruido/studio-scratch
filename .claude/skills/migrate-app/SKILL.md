@@ -1,13 +1,13 @@
 ---
 name: migrate-app
-description: Move an existing app that was set up by hand or before the harness had modules onto the current harness and its feature modules, with no change for its users. Use when the App Creator asks to migrate an app, one app at a time, in that app's own Project.
+description: Move an existing app that was set up by hand or before the harness had modules onto the current harness and its feature modules, with no change for its users. Use when the App Creator asks to migrate an app, in that app's own Project.
 ---
 
 # Migrate an existing app
 
 For an app that already ships, set up before the harness had modules (AI, who is signed in, roadmap) or before it had a lock. Goal: the app runs on the current harness with the **same behaviour for its users**. The app keeps what it has: AI on, its sign-in mode (invite-only unless its profile says otherwise) and its own roadmap files. The harness never picks a feature for it; the modules just make the app's existing features explicit.
 
-Run this **in the app's own Project**, never from app-studio, and **one app at a time**: the second app starts only after the first app's follow-up PR (step 7) has merged by itself. Between features is best: no feature branch should be open. If `inventory` stops you, tell the App Creator and stop; never work around it.
+Run this **in the app's own Project**, never from app-studio. Between features is best: no feature branch should be open. If `inventory` stops you, tell the App Creator and stop; never work around it.
 
 ## Steps
 
