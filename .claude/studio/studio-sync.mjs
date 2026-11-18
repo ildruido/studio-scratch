@@ -7,6 +7,8 @@
 //   node studio-sync.mjs health  [--app <dir>] [--studio <dir>]   is the harness sound? (pre-commit hook, CI)
 //   node studio-sync.mjs release-gate [--app <dir>]   exit 1 while the access model, or an AI public use decision it needs, is blank (release skill)
 //   node studio-sync.mjs phase   [--app <dir>] [--build-only]   print the App profile's Phase (discovery | build); --build-only exits 1 in discovery (build-feature, release, test-handoff)
+//   node studio-sync.mjs status [--studio <dir>] [--scaffold]   read-only: version, next free patch/minor, live-check state (app-studio threads)
+//   node studio-sync.mjs release-prepare [--app <dir>] [--version X.Y.Z] [--apply]   propose the version and move Unreleased into a dated section; dry run unless --apply (release skill)
 //   node studio-sync.mjs pull    [--app <dir>] [--studio <dir>] [--force]
 //   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs or feature modules (packs/ in app-studio)
 //   node studio-sync.mjs pack remove <name...> [--force]   drop stack packs the app no longer uses
@@ -132,6 +134,190 @@ export function livePending(studio) {
   const end = text.indexOf("\n## [", start + 1);
   const entry = text.slice(start, end < 0 ? undefined : end);
   return /^[\s>*_-]*Live check:\s*\**\s*pending/im.test(entry) ? version : null;
+}
+
+// ---------- changelog excerpt ----------
+
+const semver = (v) => String(v).split(".").map((n) => parseInt(n, 10) || 0);
+const cmpVersion = (a, b) => {
+  const [x, y] = [semver(a), semver(b)];
+  for (let i = 0; i < 3; i++) if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) - (y[i] ?? 0);
+  return 0;
+};
+
+/**
+ * The CHANGELOG entries newer than `since` (and not newer than `upTo`), newest first, as text, so a
+ * sync reads a few KB instead of the whole file. Plain code, no tokens. `[Unreleased]` is studio-only
+ * and never listed. Selection is by version number, so a `since` that has no entry of its own still
+ * works; with no usable `since` the newest three entries are shown, with a note.
+ */
+export function changelogSince(text, since, upTo) {
+  const parts = text.replace(/\r\n/g, "\n").split(/\n(?=## \[)/);
+  const entries = parts
+    .map((body) => ({ body: body.trim(), version: /^## \[(\d+\.\d+\.\d+)\]/.exec(body.trim())?.[1] }))
+    .filter((e) => e.version);
+  const valid = /^\d+\.\d+\.\d+$/.test(since ?? "");
+  const known = valid && entries.some((e) => e.version === since);
+  let picked = valid ? entries.filter((e) => cmpVersion(e.version, since) > 0) : entries.slice(0, 3);
+  if (upTo) picked = picked.filter((e) => cmpVersion(e.version, upTo) <= 0);
+  const notes = [];
+  if (!valid) notes.push("No usable app version, so the newest entries are shown.");
+  else if (!known) notes.push(`Version ${since} has no entry of its own in CHANGELOG.md; entries newer than it are shown.`);
+  // An action counts unless the entry only says "No **App action**" / "**App action:** none".
+  const acts = (e, kind) => {
+    const t = e.body.replace(new RegExp(`\\b(no|none)\\b[^.\\n]{0,12}\\*\\*${kind} action\\*\\*`, "gi"), "").replace(new RegExp(`\\*\\*${kind} action:?\\*\\*:?\\s*(none|not needed)`, "gi"), "");
+    return new RegExp(`\\*\\*${kind} action`, "i").test(t);
+  };
+  const lines = [];
+  if (!picked.length) {
+    lines.push(`No newer CHANGELOG entries than ${since}${upTo ? ` (up to ${upTo})` : ""}: nothing to read.`, ...notes);
+    return { text: lines.join("\n"), count: 0, app: [], admin: [] };
+  }
+  const app = picked.filter((e) => acts(e, "App")).map((e) => e.version);
+  const admin = picked.filter((e) => acts(e, "Admin")).map((e) => e.version);
+  lines.push(
+    `CHANGELOG: ${picked.length} entr${picked.length === 1 ? "y" : "ies"} newer than ${valid ? since : "your version"}${upTo ? ` (up to ${upTo})` : ""}.`,
+    ...notes,
+    `Entries that mention an App action: ${app.length ? app.join(", ") : "none"}. Admin action: ${admin.length ? admin.join(", ") : "none"}.`,
+    "",
+    picked.map((e) => e.body).join("\n\n"),
+  );
+  return { text: lines.join("\n"), count: picked.length, app, admin };
+}
+
+function changelogFor(studio, since) {
+  const file = join(studio, "CHANGELOG.md");
+  if (!existsSync(file)) return "No CHANGELOG.md in app-studio; nothing to read.";
+  return changelogSince(readFileSync(file, "utf8"), since, studioVersion(studio)).text;
+}
+
+// ---------- release helpers (status, release-prepare) ----------
+
+const gitOut = (cwd, ...args) => {
+  const r = spawnSync("git", args, { cwd, encoding: "utf8" });
+  return r.status === 0 ? r.stdout : null;
+};
+const bump = (v, kind) => {
+  const [a, b, c] = semver(v);
+  return kind === "minor" ? `${a}.${b + 1}.0` : kind === "major" ? `${a + 1}.0.0` : `${a}.${b}.${c + 1}`;
+};
+const isoDate = () => new Date().toISOString().slice(0, 10);
+
+/**
+ * Highest plugin version found on `main` and on every remote branch (open PRs), so a release PR
+ * can take the next number that nobody else holds. Plain git reads; offline refs only.
+ */
+function claimedVersions(studio) {
+  const out = [];
+  const refs = (gitOut(studio, "for-each-ref", "--format=%(refname:short)", "refs/remotes/origin") ?? "").split("\n").filter((r) => r && !r.endsWith("/HEAD"));
+  for (const ref of refs) {
+    const t = gitOut(studio, "show", `${ref}:plugins/studio/.claude-plugin/plugin.json`);
+    try {
+      const v = t && JSON.parse(t).version;
+      if (v) out.push({ ref, version: v });
+    } catch {}
+  }
+  return out;
+}
+
+/** An empty changelog entry to fill in (the wording stays with the thread). */
+export function changelogScaffold(version, date = isoDate()) {
+  return [`## [${version}] - ${date}`, "", "Live check: pending", "", "- Origin: issue #<n>. <what changed>. What changes for the App Creator / App-Studio Owner: <...>. **App action:** none. No **Admin action**."].join("\n");
+}
+
+/** Read-only: where the harness version stands and what the next release may be called. */
+export function studioStatus(studio) {
+  const current = studioVersion(studio);
+  const claimed = claimedVersions(studio);
+  const top = [current, ...claimed.map((c) => c.version)].filter((v) => /^\d+\.\d+\.\d+$/.test(v)).sort(cmpVersion).pop();
+  const held = claimed.filter((c) => cmpVersion(c.version, current) > 0);
+  const file = join(studio, "CHANGELOG.md");
+  let live = "no changelog entry for this version";
+  if (existsSync(file)) {
+    const text = readFileSync(file, "utf8").replace(/\r\n/g, "\n");
+    const m = new RegExp(`\\n## \\[${current.replace(/\./g, "\\.")}\\][^\\n]*\\n([\\s\\S]*?)(?=\\n## \\[|$)`).exec(`\n${text}`);
+    const l = m && /Live check:\s*\**\s*(pending|passed[^\n]*)/i.exec(m[1]);
+    live = l ? (/pending/i.test(l[1]) ? "pending" : l[1].trim()) : "no Live check line";
+  }
+  return {
+    current,
+    nextPatch: bump(top, "patch"),
+    nextMinor: bump(top, "minor"),
+    held: held.map((h) => `${h.version} (${h.ref})`),
+    live,
+    text: [
+      `app-studio version on this checkout: ${current}`,
+      `Versions already held by other branches: ${held.length ? held.map((h) => `${h.version} (${h.ref})`).join(", ") : "none"}`,
+      `Next free: patch ${bump(top, "patch")}, minor ${bump(top, "minor")} (you choose: patch for wording and fixes, minor for a new skill, agent, hook, profile field or workflow change)`,
+      `Newest release live check: ${live}`,
+    ].join("\n"),
+  };
+}
+
+/** The bump a list of conventional-commit subjects calls for, or null when none is user-facing. */
+export function proposeBump(subjects, current) {
+  const major1 = semver(current)[0] >= 1;
+  const breaking = subjects.some((s) => /^\w+(\([^)]*\))?!:/.test(s) || /BREAKING CHANGE/.test(s));
+  const feat = subjects.some((s) => /^feat(\([^)]*\))?:/.test(s));
+  const fix = subjects.some((s) => /^(fix|perf)(\([^)]*\))?:/.test(s));
+  if (breaking) return major1 ? "major" : "minor";
+  if (feat) return "minor";
+  if (fix) return "patch";
+  return null;
+}
+
+/**
+ * Pure: move `## [Unreleased]` into `## [version] - date`, leave an empty Unreleased, and fix the
+ * compare links at the bottom. Returns { text } or { error }.
+ */
+export function applyRelease(text, version, date, { prevTag, repoUrl } = {}) {
+  const src = text.replace(/\r\n/g, "\n");
+  const start = src.search(/^## \[Unreleased\][^\n]*$/m);
+  if (start < 0) return { error: "CHANGELOG.md has no `## [Unreleased]` heading." };
+  const afterHead = src.indexOf("\n", start) + 1;
+  const m = /^(## \[\d|\[[^\]]+\]: )/m.exec(src.slice(afterHead));
+  const endRel = m ? m.index : src.length - afterHead;
+  const body = src.slice(afterHead, afterHead + endRel).trim();
+  if (!body) return { error: "`## [Unreleased]` has no entries to release." };
+  if (new RegExp(`^## \\[${version.replace(/\./g, "\\.")}\\]`, "m").test(src)) return { error: `CHANGELOG.md already has an entry for ${version}.` };
+  let rest = src.slice(afterHead + endRel);
+  const linkLines = [];
+  const repo = repoUrl?.replace(/\.git$/, "");
+  if (repo) {
+    linkLines.push(`[Unreleased]: ${repo}/compare/v${version}...HEAD`);
+    linkLines.push(prevTag ? `[${version}]: ${repo}/compare/${prevTag}...v${version}` : `[${version}]: ${repo}/releases/tag/v${version}`);
+  }
+  // Drop the old Unreleased link; the new ones go in front of the other links.
+  rest = rest.replace(/^\[Unreleased\]: .*\n?/m, "");
+  if (linkLines.length) rest = /^\[[^\]]+\]: /m.test(rest) ? rest.replace(/^(?=\[[^\]]+\]: )/m, `${linkLines.join("\n")}\n`) : `${rest.replace(/\s*$/, "\n")}\n${linkLines.join("\n")}\n`;
+  const head = src.slice(0, start);
+  return { text: `${head}## [Unreleased]\n\n## [${version}] - ${date}\n\n${body}\n\n${rest.replace(/^\n+/, "")}`.replace(/\n{3,}/g, "\n\n") };
+}
+
+/** `release-prepare`: dry run by default; `apply` edits CHANGELOG.md. Version choice stays with the caller. */
+export function releasePrepare(app, { version, apply = false, date = isoDate() } = {}) {
+  const file = join(app, "CHANGELOG.md");
+  if (!existsSync(file)) return { ok: false, text: "No CHANGELOG.md in the app." };
+  let current = "0.0.0";
+  try { current = JSON.parse(readFileSync(join(app, "package.json"), "utf8")).version ?? current; } catch {}
+  const tag = (gitOut(app, "describe", "--tags", "--abbrev=0", "--match", "v*") ?? "").trim() || null;
+  const subjects = (gitOut(app, "log", tag ? `${tag}..HEAD` : "HEAD", "--format=%s%n%b") ?? "").split("\n").filter(Boolean);
+  const kind = proposeBump(subjects, tag ? tag.slice(1) : current);
+  const proposed = kind ? bump(tag ? tag.slice(1) : current, kind) : null;
+  const chosen = version ?? proposed;
+  const lines = [
+    `Last tag: ${tag ?? "none"}; package.json version: ${current}; commits since the tag: ${subjects.length ? "see log" : "none"}.`,
+    `Proposed bump: ${kind ?? "none (no feat/fix/perf commits: nothing user-facing)"}${proposed ? ` -> ${proposed}` : ""}${version ? `; you chose ${version}` : ""}.`,
+  ];
+  if (!chosen) return { ok: false, text: [...lines, "No release proposed. Pass --version X.Y.Z to force one."].join("\n") };
+  if (!/^\d+\.\d+\.\d+$/.test(chosen)) return { ok: false, text: `Not a version: ${chosen}` };
+  if (gitOut(app, "rev-parse", "-q", "--verify", `refs/tags/v${chosen}`)) return { ok: false, text: [...lines, `Tag v${chosen} already exists: never move it; pick another version.`].join("\n") };
+  const repoUrl = (gitOut(app, "remote", "get-url", "origin") ?? "").trim().replace(/^git@github\.com:/, "https://github.com/") || null;
+  const r = applyRelease(readFileSync(file, "utf8"), chosen, date, { prevTag: tag, repoUrl });
+  if (r.error) return { ok: false, text: [...lines, r.error].join("\n") };
+  if (apply) writeFileSync(file, r.text);
+  lines.push(apply ? `CHANGELOG.md updated: Unreleased moved under ## [${chosen}] - ${date}, compare links fixed.` : `Dry run: CHANGELOG.md not changed. Would move Unreleased under ## [${chosen}] - ${date} and fix the compare links. Add --apply to write it.`, `Still yours: the wording, and \`npm version ${chosen} --no-git-tag-version\`.`);
+  return { ok: true, version: chosen, text: lines.join("\n") };
 }
 
 // ---------- stack packs ----------
@@ -773,7 +959,9 @@ function parseArgs(argv) {
     else if (a === "--live-check") opts.liveCheck = true;
     else if (a === "--force") opts.force = true;
     else if (a === "--build-only") opts.buildOnly = true;
-    else if (["--app", "--studio", "--slug", "--title"].includes(a)) opts[a.slice(2)] = argv[++i];
+    else if (a === "--apply") opts.apply = true;
+    else if (a === "--scaffold") opts.scaffold = true;
+    else if (["--app", "--studio", "--slug", "--title", "--since", "--version"].includes(a)) opts[a.slice(2)] = argv[++i];
     else if (a.startsWith("--")) throw new Error(`Unknown argument: ${a}`);
     else opts.rest.push(a);
   }
@@ -1329,7 +1517,7 @@ export function inventory(app, studio) {
 function main() {
   const argv = process.argv.slice(2);
   const code = run(argv);
-  if (code === 2 || argv[0] === "ack" || argv[0] === "inventory") return code;
+  if (code === 2 || argv[0] === "ack" || argv[0] === "inventory" || argv[0] === "changelog" || argv[0] === "status" || argv[0] === "release-prepare") return code;
   let app;
   try {
     ({ app } = locate(parseArgs(argv)));
@@ -1446,12 +1634,38 @@ function run(argv) {
     return 1;
   }
 
+  if (opts.cmd === "status") {
+    if (!studio) {
+      console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
+      return 2;
+    }
+    const st = studioStatus(studio);
+    console.log(st.text + (opts.scaffold ? `\n\nEmpty entry (${st.nextMinor} shown; change it if it is a patch):\n${changelogScaffold(st.nextMinor)}` : ""));
+    return 0;
+  }
+
+  if (opts.cmd === "release-prepare") {
+    const r = releasePrepare(app, { version: opts.version, apply: opts.apply });
+    (r.ok ? console.log : console.error)(r.text);
+    return r.ok ? 0 : 1;
+  }
+
+  if (opts.cmd === "changelog") {
+    if (!studio) {
+      console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
+      return 2;
+    }
+    console.log(changelogFor(studio, opts.since ?? readLock(app)?.studio));
+    return 0;
+  }
+
   if (opts.cmd === "pull" || opts.cmd === "install") {
     if (!studio) {
       console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
       return 2;
     }
     let r;
+    const before = readLock(app)?.studio;
     try {
       r = (opts.cmd === "install" ? install : pull)(app, studio, opts);
     } catch (e) {
@@ -1473,6 +1687,7 @@ function run(argv) {
       ...list("skipped (changed here; move the change to app-studio, or pass --force)", r.skipped),
       ...(opts.cmd === "pull" && ih && lock?.instructions !== ih ? instructionsNote() : []),
     ];
+    if (opts.cmd === "pull" && before !== studioVersion(studio)) lines.push("", changelogFor(studio, before));
     console.log(lines.join("\n"));
     return r.skipped.length ? 1 : 0;
   }
@@ -1544,7 +1759,7 @@ function run(argv) {
     return 0;
   }
 
-  console.error("Usage: studio-sync.mjs <install|check|inventory|health|phase|pull|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force] [--live-check]");
+  console.error("Usage: studio-sync.mjs <install|check|inventory|health|phase|pull|changelog|status|release-prepare|pack add|pack remove|ack|hooks> [--app <dir>] [--studio <dir>] [--warn] [--force] [--live-check]");
   return 2;
 }
 
