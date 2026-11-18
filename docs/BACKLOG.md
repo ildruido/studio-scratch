@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-011
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010
 - **Next:** HT-004
 - **Later:**
 
@@ -11,13 +11,6 @@
 _Nothing._
 
 ## To test
-
-### HT-011 Year in the footer
-- Why: the footer line should show the current year.
-- Acceptance criteria:
-  - [x] Given the app is open, then the footer reads "About: Habit Tracker · <current year>", worked out automatically.
-- Test script for Ale:
-  1. Open the app. Expected: the grey line at the bottom reads "About: Habit Tracker · 2026" (this year).
 
 ### HT-010 Page title is "Scratch"
 - Why: the app's name on the tab and at the top of the page should be "Scratch".
@@ -122,3 +115,11 @@ _Nothing._
 ## Later
 
 ## Done
+
+### HT-011 Year in the footer
+- Why: the footer line should show the current year.
+- Acceptance criteria:
+  - [x] Given the app is open, then the footer reads "About: Habit Tracker · <current year>", worked out automatically.
+- Test script for Ale:
+  1. Open the app. Expected: the grey line at the bottom reads "About: Habit Tracker · 2026" (this year).
+- Confirmed done by Ale, 2026-11-18.
