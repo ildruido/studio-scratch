@@ -1,6 +1,6 @@
 ---
 name: new-app
-description: Start a new app in the studio - set up a fresh repo with the shared harness from app-studio, then create its PRD, backlog, Project settings and first release. Use when the App Creator asks for a new app, or when the start-up message says the studio harness is loaded but no app is set up yet.
+description: Start a new app in the studio - set up a fresh repo with the shared harness from app-studio, then create its PRD, backlog, Project settings and first release; also switches an app from discovery to build when the App Creator says "start building". Use when the App Creator asks for a new app, or when the start-up message says the harness is loaded but no app is set up yet.
 ---
 
 # New app

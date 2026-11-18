@@ -1,6 +1,6 @@
 ---
 name: build-feature
-description: Build the top Ready backlog item end to end - branch, plan, implement, test, review, merge, changelog. Use when the App Creator says "build the next thing", names a backlog id, or asks for a fix.
+description: Change the app through a backlog item, end to end - branch, plan, implement, test, review, merge, changelog. Use for any request to build or change something in the app, including small fixes ("the save button does nothing", "the app crashes on X", "add dark mode"), "build the next thing", or a backlog id - don't edit the code directly. Not for writing up ideas (prd-intake), releases, test scripts or harness changes.
 ---
 
 # Build feature

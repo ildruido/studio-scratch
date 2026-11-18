@@ -1,6 +1,6 @@
 ---
 name: release
-description: Cut a SemVer release from a green main - bump version, update CHANGELOG, tag, build and ship to the app's release target. Use when work under Unreleased should reach the App Creator.
+description: Ship a new version of the app to testers - cut a SemVer release from a green main (bump version, CHANGELOG, tag, build) and publish or deploy it to the release target, e.g. "publish the new version to the artifact link", "push it to the preview". Use when work under Unreleased should reach the App Creator or Tester.
 ---
 
 # Release

@@ -1,5 +1,5 @@
 {
-  "studio": "0.24.8",
+  "studio": "0.24.9",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -23,14 +23,14 @@
     ".claude/packs/artifact/STACK.md": "25ec0616e8819a0a4d89172503361ecf7a92f730ddbe2ee1bf69eea1a9afa11c",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "b88855893e8aeab095ecc1404e396f6e52e3cfbd1e9d86d59465879c35e47d9f",
-    ".claude/skills/harness-idea/SKILL.md": "aaaee87a31a038436caea7225c75069115f323ded1204377cbbfdd3a0d0175cd",
-    ".claude/skills/harness-sync/SKILL.md": "6bd22a3cbc934c898c3aba995ced683230b2313ea0cfc6407cdfcb89bad7fe8f",
-    ".claude/skills/migrate-app/SKILL.md": "ad70df4aa26a89267b6317a243b212b90dba380cba911767aaf5f64b96996ecd",
-    ".claude/skills/new-app/SKILL.md": "cd82adadfe0cca084fabafd88a3e8f38a6f74cbabda8bacd5fa231f24b7d27e9",
-    ".claude/skills/prd-intake/SKILL.md": "6aa95deb03570ac21b752b82206780e96b08c1f1dad5891ecf393e627e809b13",
-    ".claude/skills/release/SKILL.md": "d705a68af8170b5c1ea7388c619a186807c40e88aecfec8b78042d32c1874720",
-    ".claude/skills/test-handoff/SKILL.md": "5d64ad7b25aa94992c211dec974210c37d9e4512ac5983c26dfd80f1efa96086",
+    ".claude/skills/build-feature/SKILL.md": "b3fc27cc3cc7b7370dc5686de3a508b08f6ca034e870e7f9b3704aa92f79a5b2",
+    ".claude/skills/harness-idea/SKILL.md": "30ecc4131694a2e1b4b4595e077f34bd59302db0edf4792c0df76d1e9fbca8dd",
+    ".claude/skills/harness-sync/SKILL.md": "cd0ba99856a406777d7a9893a65d574b758417e695f5807e182803405cef8f05",
+    ".claude/skills/migrate-app/SKILL.md": "606cbb76b320fbd5515e3ea0d03077bde61c33f5e34d594026d776a9907e6114",
+    ".claude/skills/new-app/SKILL.md": "6fbe8782756ad0f45ddba98f8ca88f2995e6e6c2f8d8279a6d4601d31747c6dd",
+    ".claude/skills/prd-intake/SKILL.md": "194aef69b4a97b6e359ad90e263f897fc2036ea4d8fdeadf1324a927ae0bf20d",
+    ".claude/skills/release/SKILL.md": "b1e1360628605aaf80d15efca94257dccafa3cb04a50214500d3e97309ab770d",
+    ".claude/skills/test-handoff/SKILL.md": "15492a670cbd7307b54be2679c085bda98294f9a04cd40b0ac96807054fa0abe",
     ".claude/studio/studio-sync.mjs": "ef7a33f16b05198295cf8c0027dbe960451a7fd62bb2756b57e4f06dab1eb961"
   },
   "starters": {
