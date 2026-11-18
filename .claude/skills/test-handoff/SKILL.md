@@ -18,7 +18,7 @@ App-specific facts come from the **App profile** in `CLAUDE.md`; `<XX>` below is
    Name only the targets where the change can be seen. When an app ships to several targets (for example an artifact and a web app) and the change shows in only one, test only that one, and say in one line that the others got the same release with nothing new to check. Don't list their links as things to test.
 4. Mention any one-time consent prompt the Tester will see, and say whether to allow it.
 5. End with: "Reply with the step numbers that failed and what you saw. A screenshot helps."
-6. Write the script in plain English, no technical terms, and put it in full in your hand-back to the coordinator, which posts it word for word to the Tester in the Project chat (the Tester does not read threads). Also commit it as a file when it is longer than about 15 lines, but never hand back only a pointer to a file or `docs/BACKLOG.md`. Outside a Project, post it in chat.
+6. Write the script in plain English, no technical terms, and put it in full in your own thread message (the App Creator reads it there; the coordinator only points to the thread) and in the PR description. If the Tester is not in the Project, the App Creator asks for a pasteable copy and the coordinator posts it in full. Also commit it as a file when it is longer than about 15 lines, but never hand back only a pointer to a file or `docs/BACKLOG.md`. Outside a Project, post it in chat.
 
 ## Part B: process the results
 
