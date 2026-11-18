@@ -1,6 +1,6 @@
 ---
 name: harness-sync
-description: Keep an app's copy of the studio harness in step with app-studio - pull released updates into an app. Use when a session warns the harness is behind or edited, or when the App Creator asks to update an app's harness. Never used to change app-studio itself.
+description: Pull released app-studio updates into this app - update the harness, add or remove a stack pack or module ("add the web pack"), or act on a start-up warning that the harness is behind. Not for old hand-built apps (migrate-app). Never changes app-studio itself.
 ---
 
 # Harness sync

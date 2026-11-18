@@ -1,6 +1,6 @@
 ---
 name: test-handoff
-description: Write a short manual test script for the Tester, and turn the Tester's test results into done items or bug items. Use after a release, or when the Tester reports test results.
+description: Write the manual test script for the Tester after a release, and turn the Tester's results ("I tested v0.3.0 - step 5 failed") into done items or bug items. Use also when asked what to check on a build before sign-off. Not for cutting the release itself.
 ---
 
 # Test handoff

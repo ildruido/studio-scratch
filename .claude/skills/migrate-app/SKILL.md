@@ -1,6 +1,6 @@
 ---
 name: migrate-app
-description: Move an existing app that was set up by hand or before the harness had modules onto the current harness and its feature modules, with no change for its users. Use when the App Creator asks to migrate an app, in that app's own Project.
+description: One-off, only when the App Creator explicitly asks to migrate an app that was built by hand or before feature modules existed onto the harness and its modules. Not for routine updates (harness-sync).
 ---
 
 # Migrate an existing app
