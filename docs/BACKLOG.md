@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-011
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-011
 - **Next:** HT-004
 - **Later:**
 
@@ -18,6 +18,16 @@ _Nothing._
   - [x] Given the app is open, then the footer reads "About: Habit Tracker · <current year>", worked out automatically.
 - Test script for Ale:
   1. Open the app. Expected: the grey line at the bottom reads "About: Habit Tracker · 2026" (this year).
+
+### HT-010 Page title is "Scratch"
+- Why: the app's name on the tab and at the top of the page should be "Scratch".
+- Acceptance criteria:
+  - [x] Given the app is open, then the browser tab title is "Scratch".
+  - [x] Given the app is open, then the main page heading reads "Scratch".
+  - [x] The bottom line still starts with "About: Habit Tracker" (unchanged).
+- Test script for Ale:
+  1. Open the app. Expected: the browser tab says "Scratch" and the big heading at the top says "Scratch".
+  2. Scroll to the bottom. Expected: the grey line still starts with "About: Habit Tracker".
 
 ### HT-009 About line with the app name
 - Why: a small line at the bottom of the page says what the app is.

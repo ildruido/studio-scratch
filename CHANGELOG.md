@@ -4,6 +4,7 @@
 
 ### Changed
 - The footer line now also shows the current year. (HT-011)
+- The page title and main heading now read "Scratch". (HT-010)
 - Friendlier message when you reach the 5-habit limit. (HT-006)
 - Clearer message on the empty first screen. (HT-007)
 - Empty first screen now invites you to add your first habit. (HT-008)

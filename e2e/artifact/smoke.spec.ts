@@ -11,3 +11,9 @@ test("shows the About line with the app name and current year", async ({ page })
     `About: Habit Tracker · ${new Date().getFullYear()}`,
   );
 });
+
+test("page title and heading read Scratch", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveTitle("Scratch");
+  await expect(page.locator("#page-title")).toHaveText("Scratch");
+});
