@@ -41,7 +41,6 @@ test("a quiet 'Built with the studio harness' line sits under the footer in both
   await expect(line).toHaveCSS("color", "rgb(157, 184, 232)");
 });
 
-
 test("page heading is bold and the small label above it is not", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("#page-title")).toHaveCSS("font-weight", "700");
