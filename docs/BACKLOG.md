@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-011
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,13 @@
 _Nothing._
 
 ## To test
+
+### HT-011 Year in the footer
+- Why: the footer line should show the current year.
+- Acceptance criteria:
+  - [x] Given the app is open, then the footer reads "About: Habit Tracker · <current year>", worked out automatically.
+- Test script for Ale:
+  1. Open the app. Expected: the grey line at the bottom reads "About: Habit Tracker · 2026" (this year).
 
 ### HT-009 About line with the app name
 - Why: a small line at the bottom of the page says what the app is.
