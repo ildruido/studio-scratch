@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-012, HT-014
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-013, HT-014
 - **Next:** HT-004
 - **Later:**
 
@@ -21,14 +21,14 @@ _Nothing._
   1. Open the app and scroll to the bottom. Expected: under "About: Habit Tracker · 2026" a second small line reads "Built with the studio harness", same blue.
   2. In dark mode, expected: both lines are the lighter blue and readable.
 
-### HT-012 Footer text in dark blue
-- Why: the footer line should be dark blue instead of grey.
+### HT-013 Page heading in bold
+- Why: the big "Scratch" heading should be bold; the small label above it stays as is.
 - Acceptance criteria:
-  - [x] Given the app is open in light mode, then the footer line is dark blue and readable.
-  - [x] Given dark mode, then the footer is a lighter blue so it stays readable on the dark background.
+  - [x] Given the app is open, then the big "Scratch" heading is bold.
+  - [x] The small "Habit Tracker" label above it is unchanged (not bold).
 - Test script for Ale:
-  1. Open the app and scroll to the bottom. Expected: the "About: Habit Tracker · 2026" line is dark blue, not grey.
-  2. If your device is in dark mode, expected: the line is a lighter blue, still readable.
+  1. Open the app. Expected: the big "Scratch" heading is bold.
+  2. Look at the small "Habit Tracker" label above it. Expected: normal weight, unchanged.
 
 ### HT-010 Page title is "Scratch"
 - Why: the app's name on the tab and at the top of the page should be "Scratch".
@@ -93,7 +93,6 @@ _Nothing._
   5. Reload. Expected: habits are gone (saving comes in HT-004).
 - Notes: declares capability `db` (not used until HT-004). Also remove the seed page's `sample()` call, status line and smoke-test assertions (no AI).
 
-
 ### HT-002 Tick off today's habits
 - Why: the daily check-in is the core action.
 - Acceptance criteria:
@@ -107,7 +106,6 @@ _Nothing._
   3. Untick it. Expected: back to not done.
   4. Tick, remove the habit, add it again. Expected: it starts unticked.
   5. Reload. Expected: everything is gone (saving comes in HT-004).
-
 
 ## Ready
 
@@ -133,6 +131,16 @@ _Nothing._
 ## Later
 
 ## Done
+
+### HT-012 Footer text in dark blue
+- Why: the footer line should be dark blue instead of grey.
+- Acceptance criteria:
+  - [x] Given the app is open in light mode, then the footer line is dark blue and readable.
+  - [x] Given dark mode, then the footer is a lighter blue so it stays readable on the dark background.
+- Test script for Ale:
+  1. Open the app and scroll to the bottom. Expected: the "About: Habit Tracker · 2026" line is dark blue, not grey.
+  2. If your device is in dark mode, expected: the line is a lighter blue, still readable.
+- Confirmed done by Ale, 2026-11-18.
 
 ### HT-011 Year in the footer
 - Why: the footer line should show the current year.
