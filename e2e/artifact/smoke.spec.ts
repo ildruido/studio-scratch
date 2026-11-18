@@ -5,9 +5,11 @@ test("renders outside the Claude app", async ({ page }) => {
   await expect(page.locator("#page-title")).toBeVisible();
 });
 
-test("shows the About line with the app name", async ({ page }) => {
+test("shows the About line with the app name and current year", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#about")).toHaveText("About: Habit Tracker");
+  await expect(page.locator("#about")).toHaveText(
+    `About: Habit Tracker · ${new Date().getFullYear()}`,
+  );
 });
 
 test("page title and heading read Scratch", async ({ page }) => {
