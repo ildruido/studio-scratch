@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- The footer line is now dark blue (lighter blue in dark mode). (HT-012)
 - The footer line now also shows the current year. (HT-011)
 - The page title and main heading now read "Scratch". (HT-010)
 - Friendlier message when you reach the 5-habit limit. (HT-006)

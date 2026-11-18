@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-012
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,15 @@
 _Nothing._
 
 ## To test
+
+### HT-012 Footer text in dark blue
+- Why: the footer line should be dark blue instead of grey.
+- Acceptance criteria:
+  - [x] Given the app is open in light mode, then the footer line is dark blue and readable.
+  - [x] Given dark mode, then the footer is a lighter blue so it stays readable on the dark background.
+- Test script for Ale:
+  1. Open the app and scroll to the bottom. Expected: the "About: Habit Tracker · 2026" line is dark blue, not grey.
+  2. If your device is in dark mode, expected: the line is a lighter blue, still readable.
 
 ### HT-010 Page title is "Scratch"
 - Why: the app's name on the tab and at the top of the page should be "Scratch".

@@ -17,3 +17,11 @@ test("page title and heading read Scratch", async ({ page }) => {
   await expect(page).toHaveTitle("Scratch");
   await expect(page.locator("#page-title")).toHaveText("Scratch");
 });
+
+test("About line is dark blue in light mode and lighter blue in dark mode", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  await expect(page.locator("#about")).toHaveCSS("color", "rgb(26, 58, 107)");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(page.locator("#about")).toHaveCSS("color", "rgb(157, 184, 232)");
+});
