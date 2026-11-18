@@ -12,6 +12,7 @@
 - Friendlier hint when adding a habit with no name. (HT-005)
 
 ### Added
+- A quiet "Built with the studio harness" line under the footer. (HT-014)
 - A small "About: Habit Tracker" line at the bottom of the page. (HT-009)
 - Tick off each habit for today, and untick it. Ticking twice never counts twice. (HT-002)
 
