@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-013
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,15 @@
 _Nothing._
 
 ## To test
+
+### HT-013 Page heading in bold
+- Why: the big "Scratch" heading should be bold; the small label above it stays as is.
+- Acceptance criteria:
+  - [x] Given the app is open, then the big "Scratch" heading is bold.
+  - [x] The small "Habit Tracker" label above it is unchanged (not bold).
+- Test script for Ale:
+  1. Open the app. Expected: the big "Scratch" heading is bold.
+  2. Look at the small "Habit Tracker" label above it. Expected: normal weight, unchanged.
 
 ### HT-010 Page title is "Scratch"
 - Why: the app's name on the tab and at the top of the page should be "Scratch".
