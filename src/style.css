@@ -89,3 +89,10 @@ button {
   text-decoration: line-through;
   opacity: 0.7;
 }
+
+#about {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-align: center;
+}

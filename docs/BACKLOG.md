@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,13 @@
 _Nothing._
 
 ## To test
+
+### HT-009 About line with the app name
+- Why: a small line at the bottom of the page says what the app is.
+- Acceptance criteria:
+  - [x] Given the app is open, then a quiet footer line at the bottom reads "About: Habit Tracker".
+- Test script for Ale:
+  1. Open the app. Expected: at the bottom of the page, a small grey line reads "About: Habit Tracker".
 
 ### HT-008 Empty-state invites the first habit
 - Why: a new user should be invited to start, not instructed.
