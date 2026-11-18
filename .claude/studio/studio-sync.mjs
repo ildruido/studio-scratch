@@ -701,7 +701,7 @@ const ROLES_KNOWN = [
     "- **Claude (engineer).** Owns all code, tests, versioning, releases and the harness. Turns the App Creator's words into PRD and backlog changes, builds, ships and hands over a test script.",
     "- Ask the App Creator only when a requirement is genuinely ambiguous or a decision is product-level. Ask one question at a time, each with a recommended answer and one line on why. Everything technical is ours to decide."],
 ];
-const OWNED_LEGACY = { "merge-rule": { from: /^- \*\*Merging a PR\*\*/, until: /^- \*\*The checks\.\*\*/ }, roles: { known: ROLES_KNOWN } };
+const OWNED_LEGACY = { "merge-rule": { from: /^- \*\*Merging a PR\*\*/, until: /^- \*\*The checks\.\*\*/ }, roles: { known: ROLES_KNOWN }, "thread-reports": { insertBefore: /^- One thread per backlog item\./ } };
 
 function ownedSection(lines, name) {
   const b = lines.findIndex((l) => OWNED_BEGIN.test(l) && l.match(OWNED_BEGIN)[1] === name);
@@ -742,6 +742,17 @@ function syncOwnedSections(lines, tplLines) {
       }
       lines.splice(hit.at, hit.k.length, ...want);
       done.push(`CLAUDE.md: harness-owned section '${name}' marked and updated to the template's wording`);
+      continue;
+    }
+    if (legacy?.insertBefore) {
+      // A section new to old CLAUDE.md files: added once, just before a line every older copy has.
+      const at = lines.findIndex((x) => legacy.insertBefore.test(x));
+      if (at < 0) {
+        done.push(`CLAUDE.md: section '${name}' not found where expected; merge it by hand from the template (app-studio plugins/studio/templates/CLAUDE.md)`);
+        continue;
+      }
+      lines.splice(at, 0, ...want);
+      done.push(`CLAUDE.md: harness-owned section '${name}' added from the template`);
       continue;
     }
     const from = legacy ? lines.findIndex((x) => legacy.from.test(x)) : -1;
