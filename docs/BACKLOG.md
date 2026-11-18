@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-013
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-013, HT-014
 - **Next:** HT-004
 - **Later:**
 
@@ -11,6 +11,15 @@
 _Nothing._
 
 ## To test
+
+### HT-014 "Built with the studio harness" line
+- Why: credit the studio harness quietly under the footer.
+- Acceptance criteria:
+  - [x] Given the app is open, then a line under the footer reads "Built with the studio harness".
+  - [x] The line uses the same small size and blue as the footer: dark blue in light mode, lighter blue in dark mode.
+- Test script for Ale:
+  1. Open the app and scroll to the bottom. Expected: under "About: Habit Tracker · 2026" a second small line reads "Built with the studio harness", same blue.
+  2. In dark mode, expected: both lines are the lighter blue and readable.
 
 ### HT-013 Page heading in bold
 - Why: the big "Scratch" heading should be bold; the small label above it stays as is.
