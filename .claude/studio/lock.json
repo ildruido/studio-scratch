@@ -1,5 +1,5 @@
 {
-  "studio": "0.28.1",
+  "studio": "0.29.0",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -13,8 +13,8 @@
   "files": {
     ".claude/agents/planner.md": "bc4199574b0b9f1cfbeb6070e656e187c023401194aa51d3d1b4e6a494f45092",
     ".claude/agents/qa.md": "eaef43c62a41fef318a02f5a6b64430f598b5ed9e40fa94e571d32448e294f94",
-    ".claude/agents/reviewer.md": "600ad1033e7cb3640742d3dbee6f4e792b17ebc22c660a6b13bed06becdd260e",
-    ".claude/hooks/check.mjs": "c6918e6618685ca9c32a38bfbe2c77377ad2600af77b79d97cb29e2c47271127",
+    ".claude/agents/reviewer.md": "8397806d6ad0a18312d5724581f2ede5cec721a53db690295cb0a9a483469887",
+    ".claude/hooks/check.mjs": "783107ded65984b152d0dfae28c30b5bf2932f33c544ade595c294b3a004f0b5",
     ".claude/hooks/cloud-setup.mjs": "6a856f37a92e047893486c9ee7061dcda45f29604b9459daad25b6784f32d1bd",
     ".claude/hooks/pre-commit": "54e4800a520596f24dba9cc538de614882ede7555ff45c083f8432402835866b",
     ".claude/packs/artifact/QA.md": "0e92e8ce0b15ddb8187102ecf96373d39f5851a397bebd509c30c3e66ed1e71b",
@@ -32,7 +32,7 @@
     ".claude/skills/prd-intake/SKILL.md": "194aef69b4a97b6e359ad90e263f897fc2036ea4d8fdeadf1324a927ae0bf20d",
     ".claude/skills/release/SKILL.md": "a50abde9269ffa4307f7e0716f5cb8382dff197305f58e87e9015ef5e3c461c8",
     ".claude/skills/test-handoff/SKILL.md": "1bc11ac5b4589aef040a9127a6da8bb7f4395e2608b2926984fb3ecb63b4be6c",
-    ".claude/studio/studio-sync.mjs": "0109fc0b72063d87f9305f1d3a05dcd209592e8064f928c28e163071161bbb39"
+    ".claude/studio/studio-sync.mjs": "f4fc6e9fd38311ed155b9f1765c04f4f6e5fb69621560e468dbde005978db9a5"
   },
   "starters": {
     ".gitattributes": {
