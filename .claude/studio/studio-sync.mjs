@@ -1053,6 +1053,31 @@ export function phaseOf(app) {
 const DISCOVERY_STOP =
   "this app is in discovery (App profile, Phase): no stack is chosen, so there is nothing to build, test or release yet. Finish the requirements, then the App Creator says \"start building\" and the new-app skill's \"Start building\" section switches Phase to build";
 
+/** Repos from the App profile's "Owner-merged repos" row (`owner/repo`, comma-separated). `none` or a missing row: no repos. */
+export function ownerMergedRepos(app) {
+  const section = profileSection(app);
+  const raw = section === null ? null : profileField(section, "Owner-merged repos");
+  if (raw === null || isPlaceholder(raw)) return [];
+  return raw.replace(/`/g, "").split(/[,\s]+/).filter((r) => r && !/^none$/i.test(r));
+}
+
+/** Problems with the Owner-merged repos row, for health: the format, and the merge hook covering auto-merge and approvals. */
+export function ownerMergedProblems(app) {
+  const bad = ownerMergedRepos(app).filter((r) => !/^[^/\s]+\/[^/\s]+$/.test(r));
+  if (bad.length) return [`the App profile's Owner-merged repos must be "none" or owner/repo names separated by commas (it says "${bad.join(" ").slice(0, 40)}")`];
+  if (!ownerMergedRepos(app).length) return [];
+  let settings = {};
+  try {
+    settings = JSON.parse(readFileSync(join(app, ".claude/settings.json"), "utf8"));
+  } catch {
+    return [];
+  }
+  const covered = (settings.hooks?.PreToolUse ?? []).some(
+    (g) => String(g.matcher ?? "").includes("enable_pr_auto_merge") && (g.hooks ?? []).some((h) => String(h.command ?? "").includes("hooks/check.mjs merge")),
+  );
+  return covered ? [] : ['the App profile lists Owner-merged repos, but the merge hook in .claude/settings.json does not cover enable_pr_auto_merge and pull_request_review_write; use the matcher "mcp__.*github.*__(merge_pull_request|enable_pr_auto_merge|pull_request_review_write)" (see app-studio\'s templates/settings.json)'];
+}
+
 /** Fields that must be real even in discovery: they identify the app. */
 const IDENTITY_FIELDS = ["App", "Id prefix", "Repo", "Phase"];
 
@@ -1192,7 +1217,7 @@ const GIT_HOOKS = ".claude/hooks";
 // Claude Code hooks forwarded to the parent folder in a cloud session, as [event, matcher, check.mjs mode].
 // The git pre-commit hook covers commits, and SessionStart has already run by then.
 export const FORWARDED_HOOKS = [
-  ["PreToolUse", "mcp__.*github.*__merge_pull_request", "merge"],
+  ["PreToolUse", "mcp__.*github.*__(merge_pull_request|enable_pr_auto_merge|pull_request_review_write)", "merge"],
   ["PreToolUse", "mcp__.*github.*__(push_files|create_or_update_file|delete_file)", "write"],
   ["PostToolUse", "Edit|Write|MultiEdit", "lint"],
   ["Stop", undefined, "test"],
@@ -1367,7 +1392,7 @@ export function health(app, studio) {
     problems.push('CLAUDE.md has no "## App profile" section (merge it from app-studio\'s templates/CLAUDE.md)');
   const gaps = profileGaps(app);
   if (gaps.length) problems.push(`the App profile in CLAUDE.md still has ${gaps.length} placeholder(s), for example:\n${gaps.slice(0, 3).map((g) => `      ${g}`).join("\n")}`);
-  problems.push(...phaseProblems(app), ...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock), ...idGaps(app));
+  problems.push(...phaseProblems(app), ...ownerMergedProblems(app), ...featureGaps(app), ...hookGaps(app), ...ownGaps(app, lock), ...linkGaps(app, lock), ...idGaps(app));
   for (const [pack, file] of REQUIRED_STARTERS)
     if (lock.packs?.[pack] && !existsSync(join(app, file)))
       problems.push(`${file} is missing (the ${pack} pack's starter; copy it from app-studio's packs/${pack}/starter/)`);

@@ -5,6 +5,8 @@
 //   node .claude/hooks/check.mjs commit -> PreToolUse (Bash): run the harness health check before a git commit
 //   node .claude/hooks/check.mjs merge  -> PreToolUse (GitHub merge tool): block a merge of this app's PR unless its
 //                                          checks were read after the last push and all finished green
+//                                          Also refuses, in every repo listed in the App profile's "Owner-merged repos" row,
+//                                          a merge, switching on auto-merge and approving a PR: only the App Creator does that there.
 //   node .claude/hooks/check.mjs write  -> PreToolUse (GitHub file-write tools): block writes to this app's repo that
 //                                          skip the local clone (and so the health check)
 // Exit code 2 sends the output back to Claude as a blocking error to fix.
@@ -66,8 +68,38 @@ if (mode === "write") {
   );
 }
 
+/** Repos from the App profile's "Owner-merged repos" row (`owner/repo`, comma-separated; `none` or empty means none), lower case. */
+function ownerMergedRepos() {
+  let text = "";
+  try {
+    text = readFileSync(join(root, "CLAUDE.md"), "utf8");
+  } catch {
+    return [];
+  }
+  const start = text.indexOf("## App profile");
+  if (start < 0) return [];
+  const end = text.indexOf("\n## ", start + 5);
+  for (const line of text.slice(start, end < 0 ? undefined : end).split("\n")) {
+    const cells = line.replace(/\\\|/g, "\u0000").split("|").map((c) => c.replace(/\u0000/g, "|").trim());
+    if (cells[0] === "" && cells[1] === "Owner-merged repos")
+      return (cells[2] ?? "").replace(/`/g, "").split(/[,\s]+/).map((r) => r.toLowerCase()).filter((r) => /^[^/\s]+\/[^/\s]+$/.test(r));
+  }
+  return [];
+}
+
 if (mode === "merge") {
   const pr = input.tool_input ?? {};
+  // Owner-merged repos: Claude never merges, switches on auto-merge or approves there, whatever the checks say.
+  const tool = String(input.tool_name ?? "");
+  const approves = /pull_request_review_write$/.test(tool) && /approve/i.test(`${pr.event ?? ""}`);
+  const merges = /(merge_pull_request|enable_pr_auto_merge)$/.test(tool);
+  if ((approves || merges || !tool) && pr.owner && pr.repo && ownerMergedRepos().includes(`${pr.owner}/${pr.repo}`.toLowerCase()))
+    block(
+      `Blocked: only the App Creator merges in ${pr.owner}/${pr.repo} (App profile, Owner-merged repos). ` +
+        "Don't merge, switch on auto-merge or approve this PR; open it ready for review, tell the App Creator it waits for them, and stop.",
+    );
+  // The checks gate below is only for merging this app's own PRs.
+  if (!/merge_pull_request$/.test(tool) && tool) process.exit(0);
   if (!targetsThisApp(pr)) process.exit(0);
   const verdict = mergeVerdict(input.transcript_path, pr);
   if (verdict) {
