@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-22
+
 ### Changed
 - The app version (e.g. v0.2.0) now shows in the footer, next to the year, instead of at the top. (HT-015)
 - The main page heading is now explicitly bold. (HT-013)
@@ -28,6 +30,7 @@
 ### Added
 - First release: placeholder page that shows the app loads in the Claude app. No habit features yet (see HT-001 to HT-003).
 
-[Unreleased]: https://github.com/ildruido/studio-scratch/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ildruido/studio-scratch/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ildruido/studio-scratch/releases/tag/v0.3.0
 [0.2.0]: https://github.com/ildruido/studio-scratch/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ildruido/studio-scratch/releases/tag/v0.1.0
