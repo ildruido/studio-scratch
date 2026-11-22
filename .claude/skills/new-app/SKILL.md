@@ -23,11 +23,23 @@ For an app that has no stack, starter code or CI yet. It records "not decided ye
 
 Run only when the App Creator says "start building" (never because a stack was merely mentioned):
 
-1. Ask the App Creator the step 2 product question (artifact prototype or web app), and decide the stack packs from it.
+1. Ask the App Creator the step 2 product question (artifact prototype, web app or static site), and decide the stack packs from it.
 2. `pack add <packs> --slug <repo> --title "<App name>"`, `npm install`, and steps 6, 7 and 9 as written.
 3. Replace every `TBD` in the App profile with a real answer (the AI, Access model and Storage shape questions are asked now, per `prd-intake` "Features"), set **Phase** to `build`, and run `health`: it fails while any `TBD` is left.
+3a. For a static site, the profile rows are the ones in "Static-site path" below.
 4. Add `CI gate` to the ruleset's required checks (step 10's clicks), then step 11, and step 14.
 5. Give the coordinator step 12's report again (Project instructions, settings, Admin's checklist), since the app now has a stack, so the instructions and the checklist change.
+
+## Static-site path (the `static-site` pack alone, no `base`)
+
+A static site has no platform layer, seed page, sign-in, AI or database, so these steps differ; the rest stay as written.
+
+- **Step 4:** `pack add static-site --slug <repo> --title "<App name>"`, then `npm install` (no server install, no `base`). Never add `base`, `web` or `artifact` to it.
+- **Step 5, App profile:** Stack `static-site`; Release target the site's Cloudflare Pages address (`https://<project>.pages.dev` until a domain is set); Preview target "a public preview link per PR (`docs/PREVIEW.md`)"; **AI `off`** and AI plan `none`; **Access model `anyone, no login (public website)`**; **Storage shape `none (no data is stored)`**. These follow from the pack, so don't ask the App Creator; do tell them previews are public unless Cloudflare Access protects them. Ask the one site question that has no default: who may merge into a separate content repo, if one is used (profile row Owner-merged repos).
+- **Step 7:** the pack's sample pages, posts and styles are the seed: no seed page, no `SIGN_IN_MODE`, no `ai`, `ai-web` or `user` (they need `base`, and `pack add` refuses them). The Roadmap list module is optional on a site as on any app (`pack add roadmap`).
+- **Step 9:** `npm run check` and `npm run test:e2e` need no database. Browser tests need the pack's Playwright browser, which CI installs.
+- **Step 11:** the first release deploys through the pack's `deploy.yml`, which needs the Cloudflare account and secrets (`docs/PREVIEW.md`). If they aren't set up, do not stall the bootstrap: release when they are, and put the setup on the Admin's checklist.
+- **Step 12 report:** add the Cloudflare setup (account, API token and account id as GitHub secrets, `docs/PREVIEW.md` for Access protection of previews and the content repo) to the Admin's checklist, with a pointer to `docs/PREVIEW.md` in the app.
 
 ## Steps
 
@@ -36,7 +48,7 @@ Run only when the App Creator says "start building" (never because a stack was m
    - **The repo is attached but empty** (no commits, so no `main` to branch from or open a PR against): start `main` yourself with one GitHub call, `create_or_update_file` on the repo with path `README.md`, content `# <App name>`, message `chore: start the repo` and no branch (GitHub creates its default branch, `main`, from it). Then `git fetch origin` and branch from `origin/main`. If the session offers to create `main` instead, accept that. Don't ask the App Creator.
    - **The repo already exists with content** (for example after a discovery or inception phase with its own docs, skills and `CLAUDE.md`): read what is there first. Nothing is deleted: `install` and `pack add` never overwrite a file, and the existing docs become the input of step 8.
    - **Not on the "app-studio apps" environment** (no "Studio harness loaded" message at start-up): carry on, and add "select the cloud environment" to the Admin's checklist in step 12.
-2. **Pick the start.** Ask the App Creator first: is the tech stack decided? **Not yet** (the app is still being shaped, or is docs only): take the **discovery path** (above) and skip steps 4's `pack add`, 6, 7, 9's npm commands, 10's required checks and 11. **Decided**: ask the App Creator one product question: start as an artifact prototype (a private page in the Claude app, fastest to try), or go straight to a web app (own sign-in and hosting). Default: artifact prototype. Either way the app has a platform layer from day one, so the other build can come later without rewriting features. Once a web version exists, the artifact build stays as a prototype with smoke tests only. The answer picks the stack packs: `artifact`, `web`, or `web artifact` for a web app that keeps a prototype (the first pack named decides what `npm run build` builds).
+2. **Pick the start.** Ask the App Creator first: is the tech stack decided? **Not yet** (the app is still being shaped, or is docs only): take the **discovery path** (above) and skip steps 4's `pack add`, 6, 7, 9's npm commands, 10's required checks and 11. **Decided**: ask the App Creator one product question: start as an artifact prototype (a private page in the Claude app, fastest to try), go straight to a web app (own sign-in and hosting), or build a **static content site** (pages and posts for everyone to read, no sign-in or server, free Cloudflare hosting). Default: artifact prototype. For an artifact or web app the app has a platform layer from day one, so the other build can come later without rewriting features; once a web version exists, the artifact build stays as a prototype with smoke tests only. The answer picks the stack packs: `artifact`, `web`, or `web artifact` for a web app that keeps a prototype (the first pack named decides what `npm run build` builds), or `static-site` **alone**: it replaces `base` and never goes with `web` or `artifact`, so a site starts clean with it and follows the **Static-site path** below.
 3. **Branch.** Work in the app repo's folder beside `app-studio` (clone it there in a local session) on a branch (`chore/bootstrap`, or the session branch in a cloud session or Project thread).
 4. **Install the harness and the packs:**
    - If `install` or `pack add` stops with "not live-checked yet", app-studio's newest release is still awaiting its studio-scratch check and nothing was changed: tell the App Creator and stop (never pass `--live-check`; only the studio-scratch check does).
