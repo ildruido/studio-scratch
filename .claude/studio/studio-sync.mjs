@@ -9,7 +9,11 @@
 //   node studio-sync.mjs phase   [--app <dir>] [--build-only]   print the App profile's Phase (discovery | build); --build-only exits 1 in discovery (build-feature, release, test-handoff)
 //   node studio-sync.mjs status [--studio <dir>] [--scaffold]   read-only: version, next free patch/minor, live-check state (app-studio threads)
 //   node studio-sync.mjs release-prepare [--app <dir>] [--version X.Y.Z] [--apply]   propose the version and move Unreleased into a dated section; dry run unless --apply (release skill)
+//   node studio-sync.mjs release-cut --version X.Y.Z [--app <dir>]   release gate, clean current main, release branch, package.json bump, changelog; never commits (release skill)
+//   node studio-sync.mjs release-tag-check X.Y.Z [--app <dir>]   exit 0 once tag vX.Y.Z is on origin; without a Release tag workflow prints the by-hand steps (release skill)
+//   node studio-sync.mjs live-check-pass X.Y.Z... [--date YYYY-MM-DD] [--studio <dir>]   app-studio only: "Live check: pending" -> "passed <date>" in those entries
 //   node studio-sync.mjs pull    [--app <dir>] [--studio <dir>] [--force]
+//   node studio-sync.mjs sync    [--app <dir>] [--studio <dir>] [--force]   fast-forward app-studio to origin main, then its own pull and health, then the commit line (harness-sync skill)
 //   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs or feature modules (packs/ in app-studio)
 //   node studio-sync.mjs pack remove <name...> [--force]   drop stack packs the app no longer uses
 //   node studio-sync.mjs ack [<path...>]    mark pack starter files as reviewed against app-studio
@@ -249,7 +253,7 @@ export function studioStatus(studio) {
       `app-studio version on this checkout: ${current}`,
       `Versions already held by other branches: ${held.length ? held.map((h) => `${h.version} (${h.ref})`).join(", ") : "none"}`,
       `Next free: patch ${bump(top, "patch")}, minor ${bump(top, "minor")} (you choose: patch for wording and fixes, minor for a new skill, agent, hook, profile field or workflow change)`,
-      `Newest release live check: ${live}`,
+      `Newest release live check: ${live}${live === "pending" ? ` (once it passed in studio-scratch: node scripts/studio-sync.mjs live-check-pass ${current}, plus any older pending versions)` : ""}`,
     ].join("\n"),
   };
 }
@@ -316,8 +320,157 @@ export function releasePrepare(app, { version, apply = false, date = isoDate() }
   const r = applyRelease(readFileSync(file, "utf8"), chosen, date, { prevTag: tag, repoUrl });
   if (r.error) return { ok: false, text: [...lines, r.error].join("\n") };
   if (apply) writeFileSync(file, r.text);
-  lines.push(apply ? `CHANGELOG.md updated: Unreleased moved under ## [${chosen}] - ${date}, compare links fixed.` : `Dry run: CHANGELOG.md not changed. Would move Unreleased under ## [${chosen}] - ${date} and fix the compare links. Add --apply to write it.`, `Still yours: the wording, and \`npm version ${chosen} --no-git-tag-version\`.`);
+  lines.push(apply ? `CHANGELOG.md updated: Unreleased moved under ## [${chosen}] - ${date}, compare links fixed.` : `Dry run: CHANGELOG.md not changed. Would move Unreleased under ## [${chosen}] - ${date} and fix the compare links.`, apply ? `Still yours: the wording, and \`npm version ${chosen} --no-git-tag-version\`.` : `To cut it (branch, package.json, this changelog move): release-cut --version ${chosen}.`);
   return { ok: true, version: chosen, text: lines.join("\n") };
+}
+
+/**
+ * `release-cut`: the mechanical part of an app release (release skill steps 1-5). Stops, changing
+ * nothing, unless the release gate passes, the tree is clean and HEAD is origin/main (main is pulled
+ * first). Then: release branch (a session branch already on origin/main is kept), package.json via
+ * `npm version`, and the changelog. It never commits, pushes or merges; the version is the caller's.
+ */
+export function releaseCut(app, { version, date = isoDate() } = {}) {
+  const stop = (...why) => ({ ok: false, text: ["Release cut stopped, nothing changed:", ...why.map((w) => `  - ${w}`)].join("\n") });
+  if (!version) return stop("pass --version X.Y.Z (run release-prepare first for the proposed one; the choice is yours)");
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return stop(`not a version: ${version}`);
+  const blockers = releaseBlockers(app);
+  if (blockers.length) return stop(...blockers);
+  if ((gitOut(app, "status", "--porcelain") ?? "x").trim()) return stop("the working tree is not clean: commit or drop the changes first");
+  if (gitOut(app, "fetch", "-q", "origin", "main") === null) return stop("could not fetch origin main");
+  const branch = (gitOut(app, "rev-parse", "--abbrev-ref", "HEAD") ?? "").trim();
+  if (branch === "main" && gitOut(app, "merge", "--ff-only", "-q", "origin/main") === null) return stop("main can't fast-forward to origin/main: sort that out first");
+  const head = (gitOut(app, "rev-parse", "HEAD") ?? "").trim();
+  if (!head || head !== (gitOut(app, "rev-parse", "origin/main") ?? "").trim())
+    return stop(`HEAD (${branch}) is not origin/main: release only what is on main (git switch main && git pull, or start the session branch from origin/main)`);
+  const dry = releasePrepare(app, { version, date });
+  if (!dry.ok) return stop(dry.text.split("\n").pop());
+  const done = [];
+  if (branch === "main") {
+    if (gitOut(app, "switch", "-q", "-c", `chore/release-v${version}`) === null) return stop(`could not create branch chore/release-v${version}`);
+    done.push(`on new branch chore/release-v${version}`);
+  } else done.push(`kept branch ${branch} (it is origin/main)`);
+  if (existsSync(join(app, "package.json"))) {
+    const npm = spawnSync(process.platform === "win32" ? "npm.cmd" : "npm", ["version", version, "--no-git-tag-version", "--allow-same-version"], { cwd: app, encoding: "utf8" });
+    if (npm.status !== 0) return { ok: false, text: [...done.map((d) => `  ${d}`), `npm version ${version} failed: ${(npm.stderr || npm.stdout).trim()}`].join("\n") };
+    done.push(`package.json${existsSync(join(app, "package-lock.json")) ? " and package-lock.json" : ""} set to ${version}`);
+  }
+  releasePrepare(app, { version, date, apply: true });
+  done.push(`CHANGELOG.md: Unreleased moved under ## [${version}] - ${date}, compare links fixed`);
+  return {
+    ok: true,
+    text: [
+      `Release ${version} cut:`,
+      ...done.map((d) => `  ${d}`),
+      "Still yours: tidy the wording of the new changelog section, run `npm run check`, then",
+      `  git commit -am "chore(release): v${version}", push and merge it (CLAUDE.md "Git workflow"). CI green on main and the full run are checked by you, not by this command.`,
+    ].join("\n"),
+  };
+}
+
+/** `release-tag-check`: is tag vX.Y.Z on origin? Without the Release tag workflow, the by-hand steps. */
+export function tagCheck(app, version) {
+  const v = String(version ?? "").replace(/^v/, "");
+  const tag = `v${v}`;
+  const found = (gitOut(app, "ls-remote", "--tags", "origin", `refs/tags/${tag}`) ?? "").trim();
+  if (found) return { ok: true, text: `Tag ${tag} is on origin. Never move or delete it.` };
+  const workflow = existsSync(join(app, ".github/workflows/release-tag.yml"));
+  return {
+    ok: false,
+    text: workflow
+      ? `Tag ${tag} is not on origin yet. The Release tag workflow makes it once the release commit is on main: wait for its run on main, then run this again.`
+      : [
+          `Tag ${tag} is not on origin, and this app has no Release tag workflow (.github/workflows/release-tag.yml), so tag by hand:`,
+          `  git switch main && git pull && git tag -a ${tag} -m "${tag}" && git push origin ${tag}`,
+          "  In a cloud session that push is refused: record the tag in docs/RELEASES.md with the commit, carry on, and suggest adding the workflow (harness-sync).",
+        ].join("\n"),
+  };
+}
+
+/**
+ * Pure: in each named version's CHANGELOG entry, change "Live check: pending" to "Live check: passed
+ * <date>". All or nothing: any version without an entry or not pending is an error.
+ */
+export function markLivePassed(text, versions, date) {
+  if (!versions?.length) return { error: "Name the version(s) whose live check passed." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? "")) return { error: `The date must be YYYY-MM-DD, not ${date}.` };
+  let out = text.replace(/\r\n/g, "\n");
+  for (const v of versions) {
+    const start = out.indexOf(`\n## [${v}]`);
+    if (!/^\d+\.\d+\.\d+$/.test(v) || start < 0) return { error: `CHANGELOG.md has no entry for ${v}.` };
+    const next = out.indexOf("\n## [", start + 1);
+    const end = next < 0 ? out.length : next;
+    const entry = out.slice(start, end);
+    const re = /^([\s>*_-]*)Live check:\s*(\**)\s*pending(\**)[^\n]*$/im;
+    if (!re.test(entry)) return { error: `${v} is not pending (its entry has no "Live check: pending" line).` };
+    out = out.slice(0, start) + entry.replace(re, `$1Live check: $2passed ${date}$3`) + out.slice(end);
+  }
+  return { text: out };
+}
+
+const SYNC_FORWARD = ["--force", "--live-check"];
+
+/**
+ * `sync`: harness-sync's mechanical steps in one go. Fast-forward app-studio to origin main, then
+ * app-studio's own (just pulled) script runs `pull` and, only if that changed everything cleanly,
+ * `health`. The live-check gate and the edited-file refusal stay inside `pull`.
+ */
+function syncApp(app, studio, opts) {
+  const out = [];
+  if (existsSync(join(studio, ".git"))) {
+    // fetch + fast-forward from origin main, not `git pull`: a cloud session's app-studio clone can sit on a
+    // session branch with no upstream.
+    let g = spawnSync("git", ["-C", studio, "fetch", "-q", "origin", "main"], { encoding: "utf8" });
+    if (g.status === 0) g = spawnSync("git", ["-C", studio, "merge", "--ff-only", "-q", "FETCH_HEAD"], { encoding: "utf8" });
+    if (g.status !== 0) {
+      console.log(`Could not pull app-studio (${studio}): ${(g.stderr || g.stdout).trim()}\nNothing in the app was changed. Fix the app-studio checkout, then run sync again.`);
+      return 1;
+    }
+    out.push(`app-studio pulled (v${studioVersion(studio)}).`);
+  } else out.push(`app-studio at ${studio} is not a git checkout, so it was not pulled.`);
+  const master = join(studio, "scripts/studio-sync.mjs");
+  const step = (...a) => spawnSync(process.execPath, [master, ...a, "--app", app, "--studio", studio], { encoding: "utf8" });
+  // The version this sync started on survives a stop: a --force rerun finds the lock already moved, and would
+  // otherwise print no changelog excerpt (so an App action could be missed).
+  const marker = join(app, ".git", "studio-sync-from");
+  const lockNow = readLock(app)?.studio;
+  let start = lockNow;
+  if (existsSync(marker)) start = readFileSync(marker, "utf8").trim() || lockNow;
+  const fingerprint = () => [LOCK, "CLAUDE.md"].map((f) => (existsSync(join(app, f)) ? readFileSync(join(app, f), "utf8") : "")).join("\0");
+  const fpBefore = fingerprint();
+  const p = step("pull", ...SYNC_FORWARD.filter((f) => opts[f === "--force" ? "force" : "liveCheck"]));
+  const now = studioVersion(studio);
+  const pullOut = p.stdout.trim();
+  const excerpt = start && start !== now && !pullOut.includes(`## [${now}]`) ? changelogFor(studio, start) : "";
+  out.push(pullOut, ...(excerpt ? ["", excerpt] : []));
+  if (p.status !== 0) {
+    if (existsSync(join(app, ".git")) && start && start !== now) writeFileSync(marker, start);
+    if (p.stderr.trim()) out.push(p.stderr.trim());
+    if (/skipped/.test(p.stdout))
+      out.push("", "Sync stopped: the files above were edited here. For each, send the change as a harness-idea (if it helps every app) or move it to the App profile (if app-specific), then run sync again with --force.");
+    console.log(out.filter(Boolean).join("\n"));
+    return 1;
+  }
+  const h = step("health");
+  out.push("", h.stdout.trim());
+  if (h.status !== 0) {
+    out.push("Sync stopped: fix what health reports (the commit hook blocks the commit otherwise), then run health again.");
+    console.log(out.join("\n"));
+    return 1;
+  }
+  rmSync(marker, { force: true });
+  const changed = start !== now || fingerprint() !== fpBefore;
+  if (!changed) {
+    out.push("", "Sync done: already in step, nothing to commit.");
+  } else {
+    out.push(
+      "",
+      "Still yours: apply any App action in the changelog above, relay any Admin action, list this app's fixed and declined ideas, and pass on any Project instructions prompt.",
+      `Then commit "chore(harness): sync studio v${now}" and merge it via a PR (CLAUDE.md "Git workflow").`,
+    );
+  }
+  console.log(out.join("\n"));
+  return 0;
 }
 
 // ---------- stack packs ----------
@@ -977,7 +1130,7 @@ function parseArgs(argv) {
     else if (a === "--build-only") opts.buildOnly = true;
     else if (a === "--apply") opts.apply = true;
     else if (a === "--scaffold") opts.scaffold = true;
-    else if (["--app", "--studio", "--slug", "--title", "--since", "--version"].includes(a)) opts[a.slice(2)] = argv[++i];
+    else if (["--app", "--studio", "--slug", "--title", "--since", "--version", "--date"].includes(a)) opts[a.slice(2)] = argv[++i];
     else if (a.startsWith("--")) throw new Error(`Unknown argument: ${a}`);
     else opts.rest.push(a);
   }
@@ -1579,7 +1732,7 @@ export function inventory(app, studio) {
 function main() {
   const argv = process.argv.slice(2);
   const code = run(argv);
-  if (code === 2 || argv[0] === "ack" || argv[0] === "inventory" || argv[0] === "changelog" || argv[0] === "status" || argv[0] === "release-prepare") return code;
+  if (code === 2 || argv[0] === "ack" || argv[0] === "inventory" || argv[0] === "changelog" || argv[0] === "status" || argv[0] === "release-prepare" || argv[0] === "live-check-pass" || argv[0] === "sync") return code;
   let app;
   try {
     ({ app } = locate(parseArgs(argv)));
@@ -1710,6 +1863,46 @@ function run(argv) {
     const r = releasePrepare(app, { version: opts.version, apply: opts.apply });
     (r.ok ? console.log : console.error)(r.text);
     return r.ok ? 0 : 1;
+  }
+
+  if (opts.cmd === "release-cut") {
+    const r = releaseCut(app, { version: opts.version });
+    (r.ok ? console.log : console.error)(r.text);
+    return r.ok ? 0 : 1;
+  }
+
+  if (opts.cmd === "release-tag-check") {
+    if (!opts.rest[0]) {
+      console.error("Usage: studio-sync.mjs release-tag-check X.Y.Z");
+      return 2;
+    }
+    const r = tagCheck(app, opts.rest[0]);
+    console.log(r.text);
+    return r.ok ? 0 : 1;
+  }
+
+  if (opts.cmd === "live-check-pass") {
+    if (!studio) {
+      console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
+      return 2;
+    }
+    const file = join(studio, "CHANGELOG.md");
+    const r = existsSync(file) ? markLivePassed(readFileSync(file, "utf8"), opts.rest, opts.date ?? isoDate()) : { error: "app-studio has no CHANGELOG.md." };
+    if (r.error) {
+      console.error(`${r.error} Nothing was changed.`);
+      return 1;
+    }
+    writeFileSync(file, r.text);
+    console.log(`CHANGELOG.md: Live check passed ${opts.date ?? isoDate()} for ${opts.rest.join(", ")}. Commit it in a small PR.`);
+    return 0;
+  }
+
+  if (opts.cmd === "sync") {
+    if (!studio) {
+      console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
+      return 2;
+    }
+    return syncApp(app, studio, opts);
   }
 
   if (opts.cmd === "changelog") {

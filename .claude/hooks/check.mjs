@@ -9,11 +9,14 @@
 //                                          a merge, switching on auto-merge and approving a PR: only the App Creator does that there.
 //   node .claude/hooks/check.mjs write  -> PreToolUse (GitHub file-write tools): block writes to this app's repo that
 //                                          skip the local clone (and so the health check)
+//   Every mode that touches GitHub also refuses writes to the harness repo itself (app-studio): an app Project only files
+//   `harness-idea` issues there, whatever anyone approves. Issues and issue comments stay allowed.
 // Exit code 2 sends the output back to Claude as a blocking error to fix.
 // Shared studio harness file: change it in app-studio, not in an app.
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -29,7 +32,32 @@ try {
 // Any `git commit`, also inside a chain (`git add -A && git commit`) or with options (`git -C . commit`).
 const isCommit = (cmd) => /(^|[\s;&|(])git(\s+-{1,2}\S+(\s+[^\s-]\S*)?)*\s+commit\b/.test(cmd ?? "");
 
+/** True when `owner/repo` (or just `repo`) names the harness repo. */
+const isHarnessRepo = (owner, repo) => /^app-studio$/i.test(`${repo ?? ""}`) && !!owner;
+const HARNESS_MSG =
+  "Blocked: nobody changes app-studio from an app Project, whoever approves it, and this includes marking a release as passed. " +
+  "Changes to the harness happen only inside the app-studio Project. Decline, and offer the route that works: file a `harness-idea` issue (the harness-idea skill) " +
+  "and point the App Creator to the app-studio Project.";
+
+/** Best effort: a git push/commit whose repository is app-studio (by the folder it runs in, or a URL on the command line). */
+function bashTouchesHarness(cmd, cwd) {
+  if (!/(^|[\s;&|(])git\b[^;&|]*\b(push|commit)\b/.test(cmd ?? "")) return false;
+  if (/github\.com[/:][^/\s]+\/app-studio(\.git)?(\s|$|["'])/i.test(cmd)) return true;
+  const dirs = new Set([cwd || root]);
+  for (const m of cmd.matchAll(/git\s+-C\s+("([^"]+)"|'([^']+)'|(\S+))/g)) dirs.add(m[2] ?? m[3] ?? m[4]);
+  for (const d of dirs) {
+    const res = spawnSync("git", ["-C", resolve(cwd || root, d), "remote", "get-url", "origin"], { encoding: "utf8" });
+    const m = /[/:]([^/:]+)\/([^/]+?)(?:\.git)?\/?$/.exec((res.stdout ?? "").trim());
+    if (res.status === 0 && m && isHarnessRepo(m[1], m[2]) && !(originRepo() ?? "").endsWith("/app-studio")) return true;
+  }
+  return false;
+}
+
 if (mode === "commit") {
+  if (bashTouchesHarness(input.tool_input?.command, input.cwd)) {
+    process.stderr.write(`${HARNESS_MSG}\n`);
+    process.exit(2);
+  }
   // Needs no dependencies: the health check uses Node built-ins only.
   if (!isCommit(input.tool_input?.command)) process.exit(0);
   const sync = join(root, ".claude", "studio", "studio-sync.mjs");
@@ -61,6 +89,7 @@ const block = (msg) => {
 };
 
 if (mode === "write") {
+  if (isHarnessRepo(input.tool_input?.owner, input.tool_input?.repo) && !(originRepo() ?? "").endsWith("/app-studio")) block(HARNESS_MSG);
   if (!targetsThisApp(input.tool_input)) process.exit(0);
   block(
     "Blocked: don't write files to this app's repo through the GitHub API, because that skips the harness health check. " +
@@ -91,6 +120,7 @@ if (mode === "merge") {
   const pr = input.tool_input ?? {};
   // Owner-merged repos: Claude never merges, switches on auto-merge or approves there, whatever the checks say.
   const tool = String(input.tool_name ?? "");
+  if (isHarnessRepo(pr.owner, pr.repo) && !(originRepo() ?? "").endsWith("/app-studio")) block(HARNESS_MSG);
   const approves = /pull_request_review_write$/.test(tool) && /approve/i.test(`${pr.event ?? ""}`);
   const merges = /(merge_pull_request|enable_pr_auto_merge)$/.test(tool);
   if ((approves || merges || !tool) && pr.owner && pr.repo && ownerMergedRepos().includes(`${pr.owner}/${pr.repo}`.toLowerCase()))
@@ -180,6 +210,26 @@ const hasBin = (name) =>
   existsSync(join(root, "node_modules", ".bin", name)) ||
   existsSync(join(root, "node_modules", ".bin", `${name}.cmd`));
 
+/**
+ * Short failure text for Claude: what failed, file:line and message, plus where the full output was saved.
+ * Falls back to the last 4,000 characters if the summary helper is missing (an old app copy).
+ */
+async function failureText(label, out) {
+  let logPath = "";
+  try {
+    logPath = join(tmpdir(), `studio-${label.toLowerCase().replace(/\W+/g, "-")}-failure.log`);
+    writeFileSync(logPath, out);
+  } catch {
+    logPath = "";
+  }
+  try {
+    const { summarize } = await import("./failure-summary.mjs");
+    return summarize(out, { label, logPath });
+  } catch {
+    return out.slice(-4000);
+  }
+}
+
 function run(cmd, args) {
   const res = spawnSync(cmd, args, { cwd: root, encoding: "utf8", shell: true });
   return { ok: res.status === 0, out: `${res.stdout ?? ""}${res.stderr ?? ""}`.trim() };
@@ -211,7 +261,7 @@ if (mode === "lint") {
   if (!hasBin("eslint")) process.exit(0);
   const { ok, out } = run("npx", ["eslint", "--max-warnings=0", "--no-warn-ignored", JSON.stringify(rel)]);
   if (!ok) {
-    process.stderr.write(`ESLint failed for ${rel}. Fix before continuing:\n${out}\n`);
+    process.stderr.write(`Fix before continuing (${rel}):\n${await failureText("ESLint", out)}\n`);
     process.exit(2);
   }
   process.exit(0);
@@ -225,7 +275,7 @@ if (mode === "test") {
   if (files.length) {
     const lint = run("npx", ["eslint", "--max-warnings=0", "--no-warn-ignored", ...files.map((f) => JSON.stringify(f))]);
     if (!lint.ok) {
-      process.stderr.write(`ESLint failed for the files changed this session. Fix before finishing:\n${lint.out.slice(-4000)}\n`);
+      process.stderr.write(`Fix before finishing (files changed this session):\n${await failureText("ESLint", lint.out)}\n`);
       process.exit(2);
     }
   }
@@ -242,8 +292,7 @@ if (mode === "test") {
   else process.exit(0);
   const { ok, out } = run(...cmd);
   if (!ok) {
-    const tail = out.slice(-4000);
-    process.stderr.write(`Unit tests are failing. Fix them before finishing:\n${tail}\n`);
+    process.stderr.write(`Fix before finishing:\n${await failureText("Unit tests", out)}\n`);
     process.exit(2);
   }
   process.exit(0);
