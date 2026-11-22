@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-010, HT-013, HT-016
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-010, HT-013
 - **Next:** HT-004
 - **Later:**
 
@@ -91,14 +91,6 @@ _Nothing._
   5. Reload. Expected: everything is gone (saving comes in HT-004).
 
 ## Ready
-### HT-016 Bug: footer shows the wrong version
-- Found in: v0.3.0, step 1 of HT-015 test script
-- Steps to reproduce: Open the app and scroll to the bottom; read the version in the footer
-- Expected: Footer shows v0.3.0 (the released version) / Actual: Footer shows a different (wrong) version
-- Acceptance criteria:
-  - [ ] The failing step now shows the expected result
-  - [ ] A regression test covers it
-
 ### HT-003 See each habit's streak
 - Why: the streak is the motivation.
 - Acceptance criteria:
@@ -121,6 +113,7 @@ _Nothing._
 ## Later
 
 ## Done
+- HT-015 App version in the footer — v0.3.0
 - HT-014 "Built with the studio harness" line — v0.3.0
 - HT-009 About line with the app name — v0.3.0
 ### HT-012 Footer text in dark blue
