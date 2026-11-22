@@ -21,6 +21,7 @@ The skills and agents in `.claude/` are the shared studio harness, copied from `
 | Access model   | `whoever the owner shares it with (artifact app)` (existing app: private artifact, no sign-in) |
 | Storage shape  | `per-person documents` (existing app: one person's habits and check-ins in `db`) |
 | Decision log   | `docs/PRD.md` "Decisions" (default; change it only if the app keeps its own decision log, and give its path) |
+| Owner-merged repos | `ildruido/studio-scratch` |
 
 ### Domain rules
 
