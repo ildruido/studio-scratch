@@ -22,8 +22,8 @@ App-specific facts come from the **App profile** in `CLAUDE.md`; `<XX>` below is
 
 ## Part B: process the results
 
-1. For each step the Tester reports as passing, tick its criteria. When all criteria of an item pass, move it to **Done** with the release version: add the full item at the top of `docs/BACKLOG-DONE.md` and only its title line under **Done** in `docs/BACKLOG.md`. If the app has the `roadmap` module, remove its id from the **Roadmap** list at the same time.
-2. For each failure, create a bug item at the top of **Ready**:
+1. For each step the Tester reports as passing, tick its criteria in `docs/BACKLOG.md`. When all criteria of an item pass, run `node .claude/hooks/backlog.mjs done <id> <version>`: it moves the full item to the top of `docs/BACKLOG-DONE.md`, leaves only its title line under **Done** and removes its id from the **Roadmap** list (with the `roadmap` module). It refuses an item with an unticked criterion.
+2. For each failure, create a bug item at the top of **Ready** with `node .claude/hooks/backlog.mjs add <XX> "Bug: what the user sees" --bug --found-in "vX.Y.Z, step N" --steps "…" --expected "…" --actual "…"` (with the `roadmap` module add `--lane`). It writes this template with the next free id:
 
    ```md
    ### <XX>-0NN Bug: what the user sees

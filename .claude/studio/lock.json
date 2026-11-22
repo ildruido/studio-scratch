@@ -1,5 +1,5 @@
 {
-  "studio": "0.31.1",
+  "studio": "0.35.1",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -11,11 +11,13 @@
   },
   "instructions": "954092db6027eee2009a4cff86ecb4063109753df3701c3c1c6ba55cbe4f8296",
   "files": {
-    ".claude/agents/planner.md": "fcf78830cc17271e9a157149b14089253d95d0dfbba0f42cb702f274aad69865",
-    ".claude/agents/qa.md": "eaef43c62a41fef318a02f5a6b64430f598b5ed9e40fa94e571d32448e294f94",
-    ".claude/agents/reviewer.md": "8397806d6ad0a18312d5724581f2ede5cec721a53db690295cb0a9a483469887",
-    ".claude/hooks/check.mjs": "783107ded65984b152d0dfae28c30b5bf2932f33c544ade595c294b3a004f0b5",
+    ".claude/agents/planner.md": "9f5497275f42dbd9961fb4a55aae77c72f0eac5b105084a3d7231ca5a24b8a7c",
+    ".claude/agents/qa.md": "c22e980ac622e890ce64baa85da0e4d082ed92a5cfdb34524c5f5ba1ce2f00a8",
+    ".claude/agents/reviewer.md": "c6698a14bbc76117d073922d3ee68fa316cfa1d1a2228c119c12d6129fc148bd",
+    ".claude/hooks/backlog.mjs": "cc4e2d4b7cbceb79a972b83eb15ee8a0af38c07af7bf15450cb67ac7433daaf8",
+    ".claude/hooks/check.mjs": "944a5ca5adb961ad5279e23b6af73353d60a38d9829f4cbd2887eeb88d8e15fb",
     ".claude/hooks/cloud-setup.mjs": "6a856f37a92e047893486c9ee7061dcda45f29604b9459daad25b6784f32d1bd",
+    ".claude/hooks/failure-summary.mjs": "fb3a337a5687b6783d82e93938d96df9d590487ad58103373076fa681ca19117",
     ".claude/hooks/pre-commit": "54e4800a520596f24dba9cc538de614882ede7555ff45c083f8432402835866b",
     ".claude/packs/artifact/QA.md": "0e92e8ce0b15ddb8187102ecf96373d39f5851a397bebd509c30c3e66ed1e71b",
     ".claude/packs/artifact/RELEASE.md": "a7c25bdc5bb2b2346887428c9eb4d6332554725b779ff9cb27ab99b3c527290d",
@@ -23,16 +25,16 @@
     ".claude/packs/artifact/STACK.md": "25ec0616e8819a0a4d89172503361ecf7a92f730ddbe2ee1bf69eea1a9afa11c",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/build-feature/SKILL.md": "7c81d74b0edcc1b7102c3dde9c6d42e072de1476fc5eb41ea18348983cbefe56",
+    ".claude/skills/build-feature/SKILL.md": "7d9e0e7917a20dfc76f270d0d0311af8e96dda1006bc7cdaca57ee84114f67fb",
     ".claude/skills/harness-idea/SKILL.md": "7f1f0c78c226c72bbb8a9716853fab3c829f168acf7051b1c39538d9f45a814e",
     ".claude/skills/harness-idea/dup-search.mjs": "b7372a1d298619f5b7c667e0b2539e4acb86d0205df3cff69e92bd0571a34e4d",
-    ".claude/skills/harness-sync/SKILL.md": "6da982ed2c0c1fbc8fdbc05720dc2f4f962a12b605d3a6eb54ddf646a26b1c65",
+    ".claude/skills/harness-sync/SKILL.md": "285c292c9f6ff0e59e0eeabc928f1581fff3c955005bfa0480610fdda9f8b79f",
     ".claude/skills/migrate-app/SKILL.md": "606cbb76b320fbd5515e3ea0d03077bde61c33f5e34d594026d776a9907e6114",
-    ".claude/skills/new-app/SKILL.md": "b16f05b4e7f2a8ef5562219306eb98d8eb60d81f0562677bcf65c3f1205a5568",
-    ".claude/skills/prd-intake/SKILL.md": "641f4b3901eed9e7edd3c22eca4d68d9a2a694334104534f5af36ed92e29f1fd",
-    ".claude/skills/release/SKILL.md": "c68a09bf3708b3c3e0287e1a00838917a4e2d5c2cbf0ca3c98e4a785e4ec3cc1",
-    ".claude/skills/test-handoff/SKILL.md": "1bc11ac5b4589aef040a9127a6da8bb7f4395e2608b2926984fb3ecb63b4be6c",
-    ".claude/studio/studio-sync.mjs": "305fbc102568c4c0f954f3f1e538ce223be2c64c5c1d74ea954361d028027314"
+    ".claude/skills/new-app/SKILL.md": "3efd7e27bcfc2b1ad917d2e98d6fb8cbba8070bc9fe075da4c773f535f29ca9e",
+    ".claude/skills/prd-intake/SKILL.md": "d2c77e982e705cc26e84cfa67ee163ec1d7d0f8ebb832324798079a5f727250f",
+    ".claude/skills/release/SKILL.md": "7500ea3de340492a2caa1c03b5eaabd5be976d21386229f09246d1cb33d7f6d6",
+    ".claude/skills/test-handoff/SKILL.md": "c8cc875d007ac90c0e264e0e74f26d466e5eaec143bedf530f8a9f5043b56925",
+    ".claude/studio/studio-sync.mjs": "04076978fb1495e18b1459acf17a8d85785e6edb2fbf6784b23434a5a2915d71"
   },
   "starters": {
     ".gitattributes": {
