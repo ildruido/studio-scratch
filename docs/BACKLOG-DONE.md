@@ -1,15 +1,5 @@
 # Backlog: done
 
-### HT-015 App version in the footer
-- Done in: v0.3.0
-- Why: see at a glance which version of the app is open.
-- Acceptance criteria:
-  - [x] Given the app is open, then the footer reads "About: Habit Tracker · <year> · v<version>", with the version taken from the app's own version number.
-  - [x] The version no longer appears at the top, next to the "Habit Tracker" label.
-- Test script for Ale:
-  1. Open the app and scroll to the bottom. Expected: the footer reads "About: Habit Tracker · 2026 · v0.2.0" (the version of this build).
-  2. Look at the small "Habit Tracker" label above the heading. Expected: just "Habit Tracker", no version.
-
 ### HT-014 "Built with the studio harness" line
 - Done in: v0.3.0
 - Why: credit the studio harness quietly under the footer.
