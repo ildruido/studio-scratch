@@ -47,7 +47,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const LOCK = ".claude/studio/lock.json";
@@ -1219,7 +1219,7 @@ export const REQUIRED_HOOKS = [
 const REQUIRED_STARTERS = [["base", ".github/workflows/harness.yml"], ["static-site", ".github/workflows/harness.yml"]];
 
 const GIT_HOOKS = ".claude/hooks";
-// Claude Code hooks forwarded to the parent folder in a cloud session, as [event, matcher, check.mjs mode].
+// Claude Code hooks forwarded to the user settings in a cloud session, as [event, matcher, check.mjs mode].
 // The git pre-commit hook covers commits, and SessionStart has already run by then.
 export const FORWARDED_HOOKS = [
   ["PreToolUse", "mcp__.*github.*__(merge_pull_request|enable_pr_auto_merge|pull_request_review_write)", "merge"],
@@ -1230,9 +1230,9 @@ export const FORWARDED_HOOKS = [
 
 /**
  * Turns on what works wherever a session starts: the git pre-commit hook, and in a cloud session
- * (CLAUDE_CODE_REMOTE) the app's hooks forwarded to <parent>/.claude/settings.json. Claude Code loads
- * settings only from the session's top folder, which is the parent when several repos are attached,
- * and it usually picks up the file mid-session (best effort). Returns notes; does nothing in CI.
+ * (CLAUDE_CODE_REMOTE) the app's hooks forwarded to the user settings (~/.claude/settings.json): a cloud
+ * session runs no hooks from a folder's .claude/settings.json, and re-reads the user settings mid-session.
+ * Returns notes; does nothing in CI.
  */
 export function activateHooks(app, env = process.env) {
   const notes = [];
@@ -1256,7 +1256,11 @@ export function activateHooks(app, env = process.env) {
   const parent = dirname(app);
   const sharedParent = parent === dirname(parent) || [tmpdir(), "/tmp", "/var/tmp"].some((t) => resolve(t) === resolve(parent));
   if (env.CLAUDE_CODE_REMOTE === "true" && !sharedParent) {
-    const file = join(parent, ".claude", "settings.json");
+    // Cloud sessions don't run hooks from a folder's .claude/settings.json, only from the user settings
+    // (which they also re-read mid-session), so the hooks go there (0.30.1). Old forwarded copies in the
+    // parent folder are dropped. STUDIO_USER_SETTINGS: tests only.
+    dropFrom(join(parent, ".claude", "settings.json"), `${toPosix(app)}/.claude/hooks/`);
+    const file = env.STUDIO_USER_SETTINGS || process.env.STUDIO_USER_SETTINGS || join(homedir(), ".claude", "settings.json");
     const mine = `${toPosix(app)}/.claude/hooks/`;
     let settings = {};
     try {
@@ -1280,10 +1284,27 @@ export function activateHooks(app, env = process.env) {
     if (JSON.stringify(settings) !== before) {
       mkdirSync(dirname(file), { recursive: true });
       writeFileSync(file, `${JSON.stringify(settings, null, 2)}\n`);
-      notes.push(`forwarded the app's hooks to ${toPosix(file)} (sessions whose top folder is ${toPosix(parent)})`);
+      notes.push(`forwarded the app's hooks to ${toPosix(file)} (the user settings, which cloud sessions run)`);
     }
   }
   return notes;
+}
+
+/** Removes the hooks whose command contains `mine` from a settings file, if it has any. */
+function dropFrom(file, mine) {
+  if (!existsSync(file)) return;
+  let s;
+  try {
+    s = JSON.parse(readFileSync(file, "utf8"));
+  } catch {
+    return;
+  }
+  const before = JSON.stringify(s);
+  for (const e of Object.keys(s.hooks ?? {}))
+    s.hooks[e] = s.hooks[e]
+      .map((g) => ({ ...g, hooks: (g.hooks ?? []).filter((h) => !String(h.command ?? "").includes(mine)) }))
+      .filter((g) => g.hooks.length);
+  if (JSON.stringify(s) !== before) writeFileSync(file, `${JSON.stringify(s, null, 2)}\n`);
 }
 
 function hookGaps(app) {
