@@ -11,7 +11,7 @@ Read first: `CLAUDE.md` (above all its **App profile**: stack, domain rules, sta
 Return, in this order and nothing else:
 
 1. **Goal**: one sentence of user value.
-2. **Steps**: numbered, each small enough for one commit, naming the files to create or change. Put pure logic in DOM-free modules so it can be unit tested. Host capabilities go through the platform layer.
+2. **Steps**: numbered, each small enough for one commit, naming the files to create or change. Put pure logic in DOM-free modules so it can be unit tested. Host capabilities go through the platform layer (a static site has none).
 3. **Tests**: which unit tests and which browser flows prove each acceptance criterion. Name the criterion each test covers.
 4. **Unspoken risks**: up to 5 inputs or situations the item and PRD don't mention but a real user will hit, most likely first (for example odd or very long text, several tabs or devices at once, a day boundary while the app is open, missing or corrupted saved data, a capability or network that is unavailable). For each: what a reasonable user expects, and which test in Tests pins it.
 5. **Trade-offs**: at most 3 real design choices, each with options and your recommendation.
