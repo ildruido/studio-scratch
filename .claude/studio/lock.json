@@ -1,5 +1,5 @@
 {
-  "studio": "0.30.0",
+  "studio": "0.30.1",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -32,7 +32,7 @@
     ".claude/skills/prd-intake/SKILL.md": "194aef69b4a97b6e359ad90e263f897fc2036ea4d8fdeadf1324a927ae0bf20d",
     ".claude/skills/release/SKILL.md": "a50abde9269ffa4307f7e0716f5cb8382dff197305f58e87e9015ef5e3c461c8",
     ".claude/skills/test-handoff/SKILL.md": "1bc11ac5b4589aef040a9127a6da8bb7f4395e2608b2926984fb3ecb63b4be6c",
-    ".claude/studio/studio-sync.mjs": "a074ac5b750ca83da040f58be6b417679d55dc1f7419ef7e8a1db4a3bdc4d861"
+    ".claude/studio/studio-sync.mjs": "305fbc102568c4c0f954f3f1e538ce223be2c64c5c1d74ea954361d028027314"
   },
   "starters": {
     ".gitattributes": {
