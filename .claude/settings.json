@@ -40,7 +40,7 @@
         ]
       },
       {
-        "matcher": "mcp__.*github.*__(merge_pull_request|enable_pr_auto_merge|pull_request_review_write)",
+        "matcher": "mcp__.*github.*__merge_pull_request",
         "hooks": [
           {
             "type": "command",
