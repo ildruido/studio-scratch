@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-009, HT-010, HT-013, HT-014, HT-015
+- **Now:** HT-001, HT-002, HT-003, HT-005, HT-006, HT-007, HT-008, HT-010, HT-013
 - **Next:** HT-004
 - **Later:**
 
@@ -11,25 +11,6 @@
 _Nothing._
 
 ## To test
-
-### HT-015 App version in the footer
-- Why: see at a glance which version of the app is open.
-- Acceptance criteria:
-  - [x] Given the app is open, then the footer reads "About: Habit Tracker · <year> · v<version>", with the version taken from the app's own version number.
-  - [x] The version no longer appears at the top, next to the "Habit Tracker" label.
-- Test script for Ale:
-  1. Open the app and scroll to the bottom. Expected: the footer reads "About: Habit Tracker · 2026 · v0.2.0" (the version of this build).
-  2. Look at the small "Habit Tracker" label above the heading. Expected: just "Habit Tracker", no version.
-
-### HT-014 "Built with the studio harness" line
-- Why: credit the studio harness quietly under the footer.
-- Acceptance criteria:
-  - [x] Given the app is open, then a line under the footer reads "Built with the studio harness".
-  - [x] The line uses the same small size and blue as the footer: dark blue in light mode, lighter blue in dark mode.
-- Test script for Ale:
-  1. Open the app and scroll to the bottom. Expected: under "About: Habit Tracker · 2026" a second small line reads "Built with the studio harness", same blue.
-  2. In dark mode, expected: both lines are the lighter blue and readable.
-
 ### HT-013 Page heading in bold
 - Why: the big "Scratch" heading should be bold; the small label above it stays as is.
 - Acceptance criteria:
@@ -48,13 +29,6 @@ _Nothing._
 - Test script for Ale:
   1. Open the app. Expected: the browser tab says "Scratch" and the big heading at the top says "Scratch".
   2. Scroll to the bottom. Expected: the grey line still starts with "About: Habit Tracker".
-
-### HT-009 About line with the app name
-- Why: a small line at the bottom of the page says what the app is.
-- Acceptance criteria:
-  - [x] Given the app is open, then a quiet footer line at the bottom reads "About: Habit Tracker".
-- Test script for Ale:
-  1. Open the app. Expected: at the bottom of the page, a small grey line reads "About: Habit Tracker".
 
 ### HT-008 Empty-state invites the first habit
 - Why: a new user should be invited to start, not instructed.
@@ -140,7 +114,9 @@ _Nothing._
 ## Later
 
 ## Done
-
+- HT-015 App version in the footer — v0.3.0
+- HT-014 "Built with the studio harness" line — v0.3.0
+- HT-009 About line with the app name — v0.3.0
 ### HT-012 Footer text in dark blue
 - Why: the footer line should be dark blue instead of grey.
 - Acceptance criteria:
