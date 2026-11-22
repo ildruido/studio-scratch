@@ -7,8 +7,7 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 
 // Picks the platform for this build (the artifact runtime or the web server).
 await startPlatform();
-$("version").textContent = `v${__APP_VERSION__}`;
-$("about").textContent = `About: Habit Tracker · ${new Date().getFullYear()}`;
+$("about").textContent = `About: Habit Tracker · ${new Date().getFullYear()} · v${__APP_VERSION__}`;
 
 let habits: Habit[] = [];
 let ticks: Ticks = {};

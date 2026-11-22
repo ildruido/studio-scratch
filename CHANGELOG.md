@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- The app version (e.g. v0.2.0) now shows in the footer, next to the year, instead of at the top. (HT-015)
 - The main page heading is now explicitly bold. (HT-013)
 - The footer line is now dark blue (lighter blue in dark mode). (HT-012)
 - The footer line now also shows the current year. (HT-011)
