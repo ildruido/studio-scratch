@@ -860,6 +860,11 @@ export function addPacks(app, studio, names, { slug, title, force = false } = {}
   checkVars(vars);
   const packs = [...new Set([...Object.keys(lock.packs ?? {}), ...packClosure(studio, names)])];
   const order = packClosure(studio, packs);
+  // A pack that is a whole stack of its own (static-site) can't share an app with the stacks it replaces.
+  for (const n of order)
+    for (const other of readPack(studio, n).conflictsWith ?? [])
+      if (order.includes(other))
+        throw new Error(`Pack "${n}" can't be in the same app as "${other}" (they ship the same build setup). Use one or the other.`);
   const fresh = order.filter((n) => !(n in (lock.packs ?? {})));
 
   // Register the packs, then reuse pull for the managed files.
@@ -1211,7 +1216,7 @@ export const REQUIRED_HOOKS = [
 
 // Starter files the app owns but must keep, as [pack, path]: without the Harness workflow, a PR
 // that deletes it (or any docs-only PR) is never checked.
-const REQUIRED_STARTERS = [["base", ".github/workflows/harness.yml"]];
+const REQUIRED_STARTERS = [["base", ".github/workflows/harness.yml"], ["static-site", ".github/workflows/harness.yml"]];
 
 const GIT_HOOKS = ".claude/hooks";
 // Claude Code hooks forwarded to the parent folder in a cloud session, as [event, matcher, check.mjs mode].
