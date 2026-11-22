@@ -298,14 +298,28 @@ export function applyRelease(text, version, date, { prevTag, repoUrl } = {}) {
   return { text: `${head}## [Unreleased]\n\n## [${version}] - ${date}\n\n${body}\n\n${rest.replace(/^\n+/, "")}`.replace(/\n{3,}/g, "\n\n") };
 }
 
+/**
+ * Latest release tag (vX.Y.Z). Cloud checkouts are often shallow or made without tags, so a plain
+ * `git describe` reports "none" although the tag exists on origin. Fetch the tags first (best effort),
+ * take the highest version among the local tags, and fall back to asking origin directly.
+ */
+export function lastReleaseTag(app) {
+  spawnSync("git", ["fetch", "--tags", "--quiet", "origin"], { cwd: app, encoding: "utf8", timeout: 20000 });
+  const byVersion = (list) => list.filter((t) => /^v\d+\.\d+\.\d+$/.test(t)).sort((a, b) => semver(b.slice(1)).reduce((d, n, i) => d || n - semver(a.slice(1))[i], 0))[0] ?? null;
+  const local = byVersion((gitOut(app, "tag", "--list", "v*") ?? "").split("\n").map((t) => t.trim()));
+  if (local) return local;
+  const remote = (gitOut(app, "ls-remote", "--tags", "origin", "refs/tags/v*") ?? "").split("\n").map((l) => /refs\/tags\/(v[^\s^]+)$/.exec(l)?.[1]).filter(Boolean);
+  return byVersion(remote);
+}
+
 /** `release-prepare`: dry run by default; `apply` edits CHANGELOG.md. Version choice stays with the caller. */
 export function releasePrepare(app, { version, apply = false, date = isoDate() } = {}) {
   const file = join(app, "CHANGELOG.md");
   if (!existsSync(file)) return { ok: false, text: "No CHANGELOG.md in the app." };
   let current = "0.0.0";
   try { current = JSON.parse(readFileSync(join(app, "package.json"), "utf8")).version ?? current; } catch {}
-  const tag = (gitOut(app, "describe", "--tags", "--abbrev=0", "--match", "v*") ?? "").trim() || null;
-  const subjects = (gitOut(app, "log", tag ? `${tag}..HEAD` : "HEAD", "--format=%s%n%b") ?? "").split("\n").filter(Boolean);
+  const tag = lastReleaseTag(app);
+  const subjects = (gitOut(app, "log", tag ? `${tag}..HEAD` : "HEAD", "--format=%s%n%b") ?? (tag ? gitOut(app, "log", "HEAD", "--format=%s%n%b") : null) ?? "").split("\n").filter(Boolean);
   const kind = proposeBump(subjects, tag ? tag.slice(1) : current);
   const proposed = kind ? bump(tag ? tag.slice(1) : current, kind) : null;
   const chosen = version ?? proposed;
