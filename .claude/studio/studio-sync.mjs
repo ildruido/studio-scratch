@@ -408,7 +408,9 @@ function syncApp(app, studio, opts) {
   const p = step("pull", ...SYNC_FORWARD.filter((f) => opts[f === "--force" ? "force" : "liveCheck"]));
   const now = studioVersion(studio);
   const pullOut = p.stdout.trim();
-  const excerpt = start && start !== now && !pullOut.includes(`## [${now}]`) ? changelogFor(studio, start) : "";
+  // The pull prints the report itself when it moved the app; a gate refusal changed nothing, so it shows none.
+  const refused = /not live-checked yet/.test(p.stderr);
+  const excerpt = start && start !== now && !refused && !pullOut.includes(`Releases ${start} ->`) ? changelogFor(studio, start) : "";
   out.push(pullOut, ...(excerpt ? ["", excerpt] : []));
   if (p.status !== 0) {
     if (existsSync(join(app, ".git")) && start && start !== now) writeFileSync(marker, start);
