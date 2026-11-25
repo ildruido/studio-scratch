@@ -1364,10 +1364,12 @@ export function activateHooks(app, env = process.env) {
     const git = (...a) => spawnSync("git", ["-C", app, ...a], { encoding: "utf8" });
     const cur = (git("config", "--get", "core.hooksPath").stdout ?? "").trim();
     if (!cur || cur === GIT_HOOKS) {
-      try {
-        chmodSync(hook, 0o755);
-      } catch {
-        // Windows: Git runs hooks through sh, no mode needed.
+      for (const h of [hook, join(app, GIT_HOOKS, "pre-push")]) {
+        try {
+          chmodSync(h, 0o755);
+        } catch {
+          // Windows: Git runs hooks through sh, no mode needed. A missing pre-push (an old copy) is fine.
+        }
       }
       if (!cur && git("config", "core.hooksPath", GIT_HOOKS).status === 0) notes.push("turned on the git pre-commit health check");
     } else
