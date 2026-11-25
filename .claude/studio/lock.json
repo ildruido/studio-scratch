@@ -1,5 +1,5 @@
 {
-  "studio": "0.35.3",
+  "studio": "0.38.0",
   "packs": {
     "artifact": "0.4.1",
     "base": "0.9.0",
@@ -28,13 +28,13 @@
     ".claude/skills/build-feature/SKILL.md": "7d9e0e7917a20dfc76f270d0d0311af8e96dda1006bc7cdaca57ee84114f67fb",
     ".claude/skills/harness-idea/SKILL.md": "7f1f0c78c226c72bbb8a9716853fab3c829f168acf7051b1c39538d9f45a814e",
     ".claude/skills/harness-idea/dup-search.mjs": "b7372a1d298619f5b7c667e0b2539e4acb86d0205df3cff69e92bd0571a34e4d",
-    ".claude/skills/harness-sync/SKILL.md": "285c292c9f6ff0e59e0eeabc928f1581fff3c955005bfa0480610fdda9f8b79f",
+    ".claude/skills/harness-sync/SKILL.md": "b25c421b3982cf9f856232f7275efbebe1eafd1da9498f483538f9f79550247c",
     ".claude/skills/migrate-app/SKILL.md": "606cbb76b320fbd5515e3ea0d03077bde61c33f5e34d594026d776a9907e6114",
     ".claude/skills/new-app/SKILL.md": "3efd7e27bcfc2b1ad917d2e98d6fb8cbba8070bc9fe075da4c773f535f29ca9e",
     ".claude/skills/prd-intake/SKILL.md": "d2c77e982e705cc26e84cfa67ee163ec1d7d0f8ebb832324798079a5f727250f",
     ".claude/skills/release/SKILL.md": "7500ea3de340492a2caa1c03b5eaabd5be976d21386229f09246d1cb33d7f6d6",
     ".claude/skills/test-handoff/SKILL.md": "c8cc875d007ac90c0e264e0e74f26d466e5eaec143bedf530f8a9f5043b56925",
-    ".claude/studio/studio-sync.mjs": "26a0f886aa5f667975226a06b6963571031b933f972b71b22e7509406211a74e"
+    ".claude/studio/studio-sync.mjs": "529206053e519e0a8a5c32dfc54d7fbacdad9532f78efc61863af71c32aa8405"
   },
   "starters": {
     ".gitattributes": {
