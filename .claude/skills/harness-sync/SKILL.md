@@ -1,6 +1,7 @@
 ---
 name: harness-sync
 description: Pull released app-studio updates into this app - update the harness, add or remove a stack pack or module ("add the web pack"), or act on a start-up warning that the harness is behind. Not for old hand-built apps (migrate-app). Never changes app-studio itself.
+model: inherit
 ---
 
 # Harness sync

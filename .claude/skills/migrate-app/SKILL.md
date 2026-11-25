@@ -1,6 +1,7 @@
 ---
 name: migrate-app
 description: One-off, only when the App Creator explicitly asks to migrate an app that was built by hand or before feature modules existed onto the harness and its modules. Not for routine updates (harness-sync).
+model: inherit
 ---
 
 # Migrate an existing app
@@ -21,7 +22,7 @@ Run this **in the app's own Project**, never from app-studio. Between features i
 4. **Custom AI: harness only.** If the inventory says **CUSTOM AI DESIGN found** (the app's own AI routes, a `sample()` that takes the app's own input, its own usage ledger), the `ai` / `ai-web` modules are not a drop-in: they replace platform and server files and break the app's AI tests. Offer the App Creator **harness only** in the plan: pull the harness files, record the App profile, add no AI module, leave the app's AI and platform code alone, and track the module swap as a separate decision (its own issue). Say what switching the modules on would break.
 5. **Stop on a usage table under another name.** (If both `ai_usage` and the old table exist, the inventory says a copy is under way: check the data is in `ai_usage`.) If the inventory says the AI usage table is not `ai_usage`, do not add `ai-web`: the module would create an empty `ai_usage` and every user's monthly allowance would start from zero. Report it to the App Creator with the table's name and propose a safe copy as its own step. Never touch the app's live database from here.
 6. **Open the PR** (ready for review, titled `chore(harness): migrate to studio vX.Y.Z`) with a hand-over: what changed, what the inventory found, **what wasn't verified** (typically the live site and real AI calls). Merge as the app's `CLAUDE.md` says.
-7. **Prove it with one small follow-up PR** (a one-line docs change) that merges by itself. If auto-merge or the `main` ruleset isn't set up, say which of the one-time repo settings is missing (`new-app` step 10 has the exact clicks) and put it on the Admin's checklist; never call the migration done before this PR has merged.
+7. **Prove it with one small follow-up PR** (a one-line docs change) that merges by itself. If auto-merge or the `main` ruleset isn't set up, say which of the one-time repo settings is missing (`node .claude/hooks/app-setup.mjs admin-checklist --repo <owner/repo> --checks <the app's job name>` prints the exact clicks) and put it on the Admin's checklist; never call the migration done before this PR has merged.
 8. **Hand back to the coordinator**: the result, the inventory in one paragraph, what wasn't verified, and any Admin action (for example selecting the "app-studio apps" cloud environment when the start-up message doesn't say "Studio harness loaded"). Do not start the other app.
 
 ## Way back

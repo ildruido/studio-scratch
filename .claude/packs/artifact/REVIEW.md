@@ -1,5 +1,7 @@
 # Artifact pack: review checklist
 
+Greppable items below are run by `node .claude/hooks/review-precheck.mjs` from `review-rules.json` in this folder; the reviewer judges its leads and the items that need reading.
+
 For the `reviewer` agent. A breach is blocking unless noted.
 
 - Every `window.claude` use goes through `src/platform/`; none in features.

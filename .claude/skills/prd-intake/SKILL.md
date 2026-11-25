@@ -1,6 +1,7 @@
 ---
 name: prd-intake
 description: Capture what the App Creator describes as PRD changes and backlog items with acceptance criteria. Use for new feature ideas, complaints, spec documents they share, and open product questions ("should the app use AI?", "how should X work?"). Writes no code; a ready backlog item or a bug to fix goes to build-feature.
+model: inherit
 ---
 
 # PRD intake
