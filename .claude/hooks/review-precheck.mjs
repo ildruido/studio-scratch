@@ -4,6 +4,7 @@
 // lead, not a verdict). Always exits 0. Node built-ins only. Shared studio harness file: change it in app-studio.
 //
 //   node .claude/hooks/review-precheck.mjs [--base main] [--json]
+//   node .claude/hooks/review-precheck.mjs risk [--base main] [--json]   which reviewer agent to run (below)
 //
 // Rules come from the installed packs: `.claude/packs/<name>/review-rules.json`
 //   { "rules": [ { "id", "severity": "blocking"|"check", "message",
@@ -12,6 +13,8 @@
 //                  "hostsExcept": ["<host suffix>"]    "added" is ignored; flags http(s) hosts not on this list
 //                  "newTopLevelNotIn": "<file>"        a file added at a top level name that file doesn't mention
 //                  "modifiedFiles": true } ] }          flags changed (not added or deleted) files matching "paths"
+// A pack file may also carry "risky": ["<regex on the file path>"]: the areas whose changes need the deeper
+// reviewer (`risk`). A diff is high risk when it touches such a path or changes more than RISK_LINES lines.
 // The core knows no pack and no app feature: everything pack-specific lives in those files.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -25,6 +28,7 @@ const SECRETS = [
   [/\bgh[pousr]_[A-Za-z0-9]{30,}/, "a GitHub token"],
   [/(api[_-]?key|secret|token|passw(or)?d)["']?\s*[:=]\s*["'][^"'\s]{12,}["']/i, "a hard-coded credential"],
 ];
+const RISK_LINES = 400;
 const isTest = (p) => /(^|\/)(tests?|e2e|__tests__)\//.test(p) || /\.(test|spec)\.[jt]sx?$|\.test\.mjs$/.test(p);
 
 function git(args, cwd) {
@@ -43,6 +47,31 @@ export function addedLines(diff) {
     else if (path && l.startsWith("+")) out.push({ path, line: line++, text: l.slice(1) });
   }
   return out;
+}
+
+/** Which reviewer agent a diff needs, decided by code from the packs' "risky" path patterns and the size of the diff. */
+export function risk(root, base = "main") {
+  const ref = git(["rev-parse", "--verify", "-q", base], root) ? base : git(["rev-parse", "--verify", "-q", `origin/${base}`], root) ? `origin/${base}` : null;
+  if (!ref) return { error: `no base branch "${base}" to compare with` };
+  const range = `${ref}...HEAD`;
+  const names = (git(["diff", "--name-only", range], root) ?? "").split("\n").filter(Boolean);
+  const lines = (git(["diff", "--numstat", range], root) ?? "").split("\n").reduce((n, l) => n + (Number(l.split("\t")[0]) || 0) + (Number(l.split("\t")[1]) || 0), 0);
+  const dir = join(root, ".claude", "packs");
+  const patterns = [];
+  for (const pack of existsSync(dir) ? readdirSync(dir) : []) {
+    try { for (const re of JSON.parse(readFileSync(join(dir, pack, "review-rules.json"), "utf8")).risky ?? []) patterns.push({ pack, re: new RegExp(re) }); } catch { /* no rule file */ }
+  }
+  const paths = names.filter((n) => patterns.some((p) => p.re.test(n)));
+  const big = lines > RISK_LINES;
+  const high = paths.length > 0 || big;
+  return { risk: high ? "high" : "routine", reviewer: high ? "reviewer-deep" : "reviewer", paths, lines, because: [...(paths.length ? ["risky paths"] : []), ...(big ? [`more than ${RISK_LINES} lines changed`] : [])] };
+}
+
+export function renderRisk(r) {
+  if (r.error) return `review-precheck: ${r.error}`;
+  const out = [`risk: ${r.risk}`, `Run the \`${r.reviewer}\` agent (${r.lines} lines changed${r.because.length ? `; ${r.because.join(", ")}` : ""}).`];
+  for (const p of r.paths) out.push(`- ${p}`);
+  return out.join("\n");
 }
 
 function packRules(root) {
@@ -179,6 +208,11 @@ export function render(result) {
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const a = process.argv.slice(2);
   const base = a.includes("--base") ? a[a.indexOf("--base") + 1] : "main";
+  if (a[0] === "risk") {
+    const r = risk(process.cwd(), base);
+    console.log(a.includes("--json") ? JSON.stringify(r, null, 2) : renderRisk(r));
+    process.exit(0);
+  }
   const result = precheck(process.cwd(), base);
   console.log(a.includes("--json") ? JSON.stringify(result, null, 2) : render(result));
 }

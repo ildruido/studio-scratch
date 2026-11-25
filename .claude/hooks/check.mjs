@@ -5,6 +5,7 @@
 //   node .claude/hooks/check.mjs commit -> PreToolUse (Bash): run the harness health check before a git commit
 //   node .claude/hooks/check.mjs merge  -> PreToolUse (GitHub merge tool): block a merge of this app's PR unless its
 //                                          checks were read after the last push and all finished green
+//                                          Also blocks it without a passing review and QA result for HEAD (verdict.mjs).
 //                                          Also refuses, in every repo listed in the App profile's "Owner-merged repos" row,
 //                                          a merge, switching on auto-merge and approving a PR: only the App Creator does that there.
 //   node .claude/hooks/check.mjs write  -> PreToolUse (GitHub file-write tools): block writes to this app's repo that
@@ -139,6 +140,8 @@ if (mode === "merge") {
         ".claude/ and workflows. A PR may have one or both. Wait for running checks; fix red ones.",
     );
   }
+  const results = (await import("./verdict.mjs")).verdictProblems(root);
+  if (results.length) block(`Merge blocked: the review and QA results don't cover this commit.\n${results.map((r) => `- ${r}`).join("\n")}`);
   process.exit(0);
 }
 
