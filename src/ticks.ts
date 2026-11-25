@@ -8,6 +8,7 @@ export function dayKey(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/** True when the habit was ticked on that "YYYY-MM-DD" day. */
 export function isTicked(ticks: Ticks, habitId: string, day: string): boolean {
   return (ticks[habitId] ?? []).includes(day);
 }
