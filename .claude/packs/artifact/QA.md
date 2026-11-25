@@ -1,5 +1,7 @@
 # Artifact pack: QA checklist
 
+Mechanical items below are run by `node .claude/hooks/qa-run.mjs` (build, baseline and changed specs, `qa-rules.json` in this folder); the qa agent does the rest.
+
 For the `qa` agent, on top of its general checks. Browser tests are in `e2e/artifact/`; the page is served from `dist-artifact/` on :4173 (`npm run preview`).
 
 - **No runtime.** Without `window.claude` the page renders and says why the AI features are off.
