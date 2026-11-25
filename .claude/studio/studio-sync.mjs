@@ -11,7 +11,7 @@
 //   node studio-sync.mjs release-prepare [--app <dir>] [--version X.Y.Z] [--apply]   propose the version and move Unreleased into a dated section; dry run unless --apply (release skill)
 //   node studio-sync.mjs release-cut --version X.Y.Z [--app <dir>]   release gate, clean current main, release branch, package.json bump, changelog; never commits (release skill)
 //   node studio-sync.mjs release-tag-check X.Y.Z [--app <dir>]   exit 0 once tag vX.Y.Z is on origin; without a Release tag workflow prints the by-hand steps (release skill)
-//   node studio-sync.mjs live-check-pass X.Y.Z... [--date YYYY-MM-DD] [--studio <dir>]   app-studio only: "Live check: pending" -> "passed <date>" in those entries
+//   node studio-sync.mjs live-check-pass   moved: node scripts/release.mjs pass-main <version>
 //   node studio-sync.mjs pull    [--app <dir>] [--studio <dir>] [--force]
 //   node studio-sync.mjs sync    [--app <dir>] [--studio <dir>] [--force]   fast-forward app-studio to origin main, then its own pull and health, then the commit line (harness-sync skill)
 //   node studio-sync.mjs pack add <name...> [--slug <kebab>] [--title <Name>]   add stack packs or feature modules (packs/ in app-studio)
@@ -123,24 +123,50 @@ export function studioVersion(studio) {
     .version;
 }
 
-/**
- * The version the master copy is on, when its CHANGELOG entry says "Live check: pending": released,
- * but not yet confirmed in the studio-scratch Project. Apps must not pull it until a later commit
- * on main changes the line to "Live check: passed". No changelog or no marker means no gate.
- */
-export function livePending(studio) {
-  const file = join(studio, "CHANGELOG.md");
-  if (!existsSync(file)) return null;
-  const version = studioVersion(studio);
-  const text = readFileSync(file, "utf8").replace(/\r\n/g, "\n");
-  const start = text.indexOf(`\n## [${version}]`);
-  if (start < 0) return null;
-  const end = text.indexOf("\n## [", start + 1);
-  const entry = text.slice(start, end < 0 ? undefined : end);
-  return /^[\s>*_-]*Live check:\s*\**\s*pending/im.test(entry) ? version : null;
+// release.mjs sits next to the master script only. An app's own copy of this file runs without it
+// (its `health` and `check` never need release data), so the import is optional.
+let release = null;
+try {
+  release = await import("./release.mjs");
+} catch {
+  release = null;
 }
 
-// ---------- changelog excerpt ----------
+/**
+ * Releases between the app's version (`since`) and the master copy's version whose check on main is
+ * still pending, as version numbers, oldest first. Released but not yet confirmed in studio-scratch:
+ * apps must not move past any of them until `release.mjs pass-main` ran. Every release in range
+ * counts, not only the newest. No release data means no gate.
+ */
+export function pendingInRange(studio, since) {
+  if (!release || !studio || !existsSync(join(studio, "plugins/studio/.claude-plugin/plugin.json"))) return [];
+  const g = release.gate(release.loadAll(studio), studioVersion(studio), since);
+  return g.data.blocking.map((b) => b.version).reverse();
+}
+
+// ---------- sync report ----------
+
+/**
+ * The minimal report after a sync, from the release records: one line per release newer than
+ * `since` (not past the master copy's version), then what needs the App Creator. Plain code, no tokens.
+ * Details of one release: `node scripts/release.mjs details <version>`.
+ */
+export function syncReport(studio, since) {
+  if (!release) return "No release data next to this script; nothing to report.";
+  const all = release.loadAll(studio);
+  const current = studioVersion(studio);
+  const valid = /^\d+\.\d+\.\d+$/.test(since ?? "");
+  const range = release.summary(all, current, since);
+  if (!range.data.length) return `No releases newer than ${since}${valid ? "" : " (unknown app version)"}: nothing to report.`;
+  const app = release.actions(all, current, since, "app");
+  const admin = release.actions(all, current, since, "admin");
+  const lines = [`Releases ${valid ? `${since} -> ${current}` : `up to ${current}`}:`, ...range.text.split("\n").map((l) => `  ${l}`), "", "Needs you:"];
+  if (!app.data.length && !admin.data.length) lines.push("  nothing");
+  if (app.data.length) lines.push("  App actions (do these in this app):", ...app.text.split("\n").map((l) => `    ${l}`));
+  if (admin.data.length) lines.push("  Admin actions (relay to the App Creator, exact steps):", ...admin.text.split("\n").map((l) => `    ${l}`));
+  lines.push("", `Details of one release, only if asked: node ${join(studio, "scripts/release.mjs")} details <version>`);
+  return lines.join("\n");
+}
 
 const semver = (v) => String(v).split(".").map((n) => parseInt(n, 10) || 0);
 const cmpVersion = (a, b) => {
@@ -149,50 +175,8 @@ const cmpVersion = (a, b) => {
   return 0;
 };
 
-/**
- * The CHANGELOG entries newer than `since` (and not newer than `upTo`), newest first, as text, so a
- * sync reads a few KB instead of the whole file. Plain code, no tokens. `[Unreleased]` is studio-only
- * and never listed. Selection is by version number, so a `since` that has no entry of its own still
- * works; with no usable `since` the newest three entries are shown, with a note.
- */
-export function changelogSince(text, since, upTo) {
-  const parts = text.replace(/\r\n/g, "\n").split(/\n(?=## \[)/);
-  const entries = parts
-    .map((body) => ({ body: body.trim(), version: /^## \[(\d+\.\d+\.\d+)\]/.exec(body.trim())?.[1] }))
-    .filter((e) => e.version);
-  const valid = /^\d+\.\d+\.\d+$/.test(since ?? "");
-  const known = valid && entries.some((e) => e.version === since);
-  let picked = valid ? entries.filter((e) => cmpVersion(e.version, since) > 0) : entries.slice(0, 3);
-  if (upTo) picked = picked.filter((e) => cmpVersion(e.version, upTo) <= 0);
-  const notes = [];
-  if (!valid) notes.push("No usable app version, so the newest entries are shown.");
-  else if (!known) notes.push(`Version ${since} has no entry of its own in CHANGELOG.md; entries newer than it are shown.`);
-  // An action counts unless the entry only says "No **App action**" / "**App action:** none".
-  const acts = (e, kind) => {
-    const t = e.body.replace(new RegExp(`\\b(no|none)\\b[^.\\n]{0,12}\\*\\*${kind} action\\*\\*`, "gi"), "").replace(new RegExp(`\\*\\*${kind} action:?\\*\\*:?\\s*(none|not needed)`, "gi"), "");
-    return new RegExp(`\\*\\*${kind} action`, "i").test(t);
-  };
-  const lines = [];
-  if (!picked.length) {
-    lines.push(`No newer CHANGELOG entries than ${since}${upTo ? ` (up to ${upTo})` : ""}: nothing to read.`, ...notes);
-    return { text: lines.join("\n"), count: 0, app: [], admin: [] };
-  }
-  const app = picked.filter((e) => acts(e, "App")).map((e) => e.version);
-  const admin = picked.filter((e) => acts(e, "Admin")).map((e) => e.version);
-  lines.push(
-    `CHANGELOG: ${picked.length} entr${picked.length === 1 ? "y" : "ies"} newer than ${valid ? since : "your version"}${upTo ? ` (up to ${upTo})` : ""}.`,
-    ...notes,
-    `Entries that mention an App action: ${app.length ? app.join(", ") : "none"}. Admin action: ${admin.length ? admin.join(", ") : "none"}.`,
-    "",
-    picked.map((e) => e.body).join("\n\n"),
-  );
-  return { text: lines.join("\n"), count: picked.length, app, admin };
-}
-
 function changelogFor(studio, since) {
-  const file = join(studio, "CHANGELOG.md");
-  if (!existsSync(file)) return "No CHANGELOG.md in app-studio; nothing to read.";
-  return changelogSince(readFileSync(file, "utf8"), since, studioVersion(studio)).text;
+  return syncReport(studio, since);
 }
 
 // ---------- release helpers (status, release-prepare) ----------
@@ -224,25 +208,15 @@ function claimedVersions(studio) {
   return out;
 }
 
-/** An empty changelog entry to fill in (the wording stays with the thread). */
-export function changelogScaffold(version, date = isoDate()) {
-  return [`## [${version}] - ${date}`, "", "Live check: pending", "", "- Origin: issue #<n>. <what changed>. What changes for the App Creator / App-Studio Owner: <...>. **App action:** none. No **Admin action**."].join("\n");
-}
-
 /** Read-only: where the harness version stands and what the next release may be called. */
 export function studioStatus(studio) {
   const current = studioVersion(studio);
   const claimed = claimedVersions(studio);
   const top = [current, ...claimed.map((c) => c.version)].filter((v) => /^\d+\.\d+\.\d+$/.test(v)).sort(cmpVersion).pop();
   const held = claimed.filter((c) => cmpVersion(c.version, current) > 0);
-  const file = join(studio, "CHANGELOG.md");
-  let live = "no changelog entry for this version";
-  if (existsSync(file)) {
-    const text = readFileSync(file, "utf8").replace(/\r\n/g, "\n");
-    const m = new RegExp(`\\n## \\[${current.replace(/\./g, "\\.")}\\][^\\n]*\\n([\\s\\S]*?)(?=\\n## \\[|$)`).exec(`\n${text}`);
-    const l = m && /Live check:\s*\**\s*(pending|passed[^\n]*)/i.exec(m[1]);
-    live = l ? (/pending/i.test(l[1]) ? "pending" : l[1].trim()) : "no Live check line";
-  }
+  const rec = release ? release.loadAll(studio).find((r) => r.version === current) : null;
+  const st = rec ? String(rec.status?.main ?? "pending") : null;
+  const live = !rec ? "no release record for this version" : /^pending/i.test(st) ? "pending" : st;
   return {
     current,
     nextPatch: bump(top, "patch"),
@@ -253,7 +227,7 @@ export function studioStatus(studio) {
       `app-studio version on this checkout: ${current}`,
       `Versions already held by other branches: ${held.length ? held.map((h) => `${h.version} (${h.ref})`).join(", ") : "none"}`,
       `Next free: patch ${bump(top, "patch")}, minor ${bump(top, "minor")} (you choose: patch for wording and fixes, minor for a new skill, agent, hook, profile field or workflow change)`,
-      `Newest release live check: ${live}${live === "pending" ? ` (once it passed in studio-scratch: node scripts/studio-sync.mjs live-check-pass ${current}, plus any older pending versions)` : ""}`,
+      `Newest release check on main: ${live}${live === "pending" ? ` (once it passed in studio-scratch: node scripts/release.mjs pass-main ${current}, plus any older pending versions)` : ""}`,
     ].join("\n"),
   };
 }
@@ -401,27 +375,6 @@ export function tagCheck(app, version) {
   };
 }
 
-/**
- * Pure: in each named version's CHANGELOG entry, change "Live check: pending" to "Live check: passed
- * <date>". All or nothing: any version without an entry or not pending is an error.
- */
-export function markLivePassed(text, versions, date) {
-  if (!versions?.length) return { error: "Name the version(s) whose live check passed." };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? "")) return { error: `The date must be YYYY-MM-DD, not ${date}.` };
-  let out = text.replace(/\r\n/g, "\n");
-  for (const v of versions) {
-    const start = out.indexOf(`\n## [${v}]`);
-    if (!/^\d+\.\d+\.\d+$/.test(v) || start < 0) return { error: `CHANGELOG.md has no entry for ${v}.` };
-    const next = out.indexOf("\n## [", start + 1);
-    const end = next < 0 ? out.length : next;
-    const entry = out.slice(start, end);
-    const re = /^([\s>*_-]*)Live check:\s*(\**)\s*pending(\**)[^\n]*$/im;
-    if (!re.test(entry)) return { error: `${v} is not pending (its entry has no "Live check: pending" line).` };
-    out = out.slice(0, start) + entry.replace(re, `$1Live check: $2passed ${date}$3`) + out.slice(end);
-  }
-  return { text: out };
-}
-
 const SYNC_FORWARD = ["--force", "--live-check"];
 
 /**
@@ -479,7 +432,7 @@ function syncApp(app, studio, opts) {
   } else {
     out.push(
       "",
-      "Still yours: apply any App action in the changelog above, relay any Admin action, list this app's fixed and declined ideas, and pass on any Project instructions prompt.",
+      "Still yours: apply any App action in the report above, relay any Admin action, list this app's fixed and declined ideas, and pass on any Project instructions prompt.",
       `Then commit "chore(harness): sync studio v${now}" and merge it via a PR (CLAUDE.md "Git workflow").`,
     );
   }
@@ -1852,13 +1805,13 @@ function run(argv) {
     return 1;
   }
 
-  // Pull, install and pack add copy what app-studio holds into the app: stop on a release that
-  // hasn't passed its live check. `--live-check` is for the studio-scratch check only.
-  const pending = ["pull", "install"].includes(opts.cmd) || (opts.cmd === "pack" && opts.rest[0] === "add") ? studio && livePending(studio) : null;
-  if (pending && !opts.liveCheck) {
+  // Pull, install and pack add copy what app-studio holds into the app: stop while any release between the
+  // app's version and app-studio's is waiting on its check on main. `--live-check` is for the studio-scratch check only.
+  const pending = ["pull", "install"].includes(opts.cmd) || (opts.cmd === "pack" && opts.rest[0] === "add") ? pendingInRange(studio, readLock(app)?.studio) : [];
+  if (pending.length && !opts.liveCheck) {
     console.error(
-      `app-studio v${pending} is not live-checked yet (its CHANGELOG.md entry says "Live check: pending"), so nothing was changed. ` +
-        "Wait until the entry says \"Live check: passed\", or run it with --live-check only for the studio-scratch check.",
+      `app-studio ${pending.map((v) => `v${v}`).join(", ")} ${pending.length === 1 ? "is" : "are"} not live-checked yet (status.main is pending in releases/), so nothing was changed. ` +
+        "Wait until `node scripts/release.mjs pending` lists nothing, or run it with --live-check only for the studio-scratch check.",
     );
     return 1;
   }
@@ -1896,19 +1849,8 @@ function run(argv) {
   }
 
   if (opts.cmd === "live-check-pass") {
-    if (!studio) {
-      console.error("app-studio not found. Pass --studio <dir> or set STUDIO_DIR.");
-      return 2;
-    }
-    const file = join(studio, "CHANGELOG.md");
-    const r = existsSync(file) ? markLivePassed(readFileSync(file, "utf8"), opts.rest, opts.date ?? isoDate()) : { error: "app-studio has no CHANGELOG.md." };
-    if (r.error) {
-      console.error(`${r.error} Nothing was changed.`);
-      return 1;
-    }
-    writeFileSync(file, r.text);
-    console.log(`CHANGELOG.md: Live check passed ${opts.date ?? isoDate()} for ${opts.rest.join(", ")}. Commit it in a small PR.`);
-    return 0;
+    console.error("Moved: run `node scripts/release.mjs pass-main <version>` (it sets the record to passed and renders CHANGELOG.md). Nothing was changed.");
+    return 1;
   }
 
   if (opts.cmd === "sync") {
