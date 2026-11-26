@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Harness updated to 0.46.0 and the discovery phase switched on; earlier decisions moved to the discovery decision log.
+
 ## [0.3.0] - 2026-11-22
 
 ### Changed
