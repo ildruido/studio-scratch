@@ -129,10 +129,11 @@ if (mode === "merge") {
       `Blocked: only the App Creator merges in ${pr.owner}/${pr.repo} (App profile, Owner-merged repos). ` +
         "Don't merge, switch on auto-merge or approve this PR; open it ready for review, tell the App Creator it waits for them, and stop.",
     );
-  // The checks gate below is only for merging this app's own PRs.
-  if (!/merge_pull_request$/.test(tool) && tool) process.exit(0);
+  // Both gates below are only for merging this app's own PRs. Switching on auto-merge needs the review and QA
+  // results too (it is the usual way a PR merges); only a direct merge also needs the checks read first.
+  if (!/(merge_pull_request|enable_pr_auto_merge)$/.test(tool) && tool) process.exit(0);
   if (!targetsThisApp(pr)) process.exit(0);
-  const verdict = mergeVerdict(input.transcript_path, pr);
+  const verdict = /enable_pr_auto_merge$/.test(tool) ? "" : mergeVerdict(input.transcript_path, pr);
   if (verdict) {
     block(
       `Merge blocked: ${verdict}. Right before merging, read the PR's checks (the GitHub pull_request_read tool, method ` +

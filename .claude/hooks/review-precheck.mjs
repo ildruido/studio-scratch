@@ -51,9 +51,10 @@ export function addedLines(diff) {
 
 /** Which reviewer agent a diff needs, decided by code from the packs' "risky" path patterns and the size of the diff. */
 export function risk(root, base = "main") {
-  const ref = git(["rev-parse", "--verify", "-q", base], root) ? base : git(["rev-parse", "--verify", "-q", `origin/${base}`], root) ? `origin/${base}` : null;
+  const ref = git(["rev-parse", "--verify", "-q", `origin/${base}`], root) ? `origin/${base}` : git(["rev-parse", "--verify", "-q", base], root) ? base : null;
   if (!ref) return { error: `no base branch "${base}" to compare with` };
-  const range = `${ref}...HEAD`;
+  // In a shallow clone `...` has no merge base: fall back to comparing with the base tip.
+  const range = git(["diff", "--name-only", `${ref}...HEAD`], root) !== null ? `${ref}...HEAD` : `${ref}..HEAD`;
   const names = (git(["diff", "--name-only", range], root) ?? "").split("\n").filter(Boolean);
   const lines = (git(["diff", "--numstat", range], root) ?? "").split("\n").reduce((n, l) => n + (Number(l.split("\t")[0]) || 0) + (Number(l.split("\t")[1]) || 0), 0);
   const dir = join(root, ".claude", "packs");
@@ -103,7 +104,7 @@ export function scenarioLeads(root, ref, names) {
   const named = new Set();
   for (const n of names.filter((x) => /^releases\/\d[^/]*\.json$/.test(x))) {
     const c = read(existsSync(join(root, n)) ? readFileSync(join(root, n), "utf8") : null).checks ?? {};
-    for (const id of [...(c.branch ?? []), ...(c.main ?? [])]) if (typeof id === "string") named.add(id);
+    for (const id of [...(Array.isArray(c.branch) ? c.branch : []), ...(Array.isArray(c.main) ? c.main : [])]) if (typeof id === "string") named.add(id);
   }
   for (const id of named) {
     if (!byId.has(id)) out.push({ id: "scenario-unknown", where: id, message: "the release record names a scenario that is not in releases/scenarios.json" });

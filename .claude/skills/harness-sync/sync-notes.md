@@ -1,0 +1,7 @@
+# Harness sync: pack starter files and Project instructions
+
+_Branch file of the `harness-sync` skill. Read it only when `sync` or `check` reports held-back or edited pack starter files, or says "Project instructions template changed"._
+
+5. **Pack starter files** (CI workflow, configs, server, platform adapters) are the app's own code. `sync` refreshes the ones you never edited and adds files new in a pack; for the rest the check says "edited here". If it says starter files are **held back** (the app calls a module's capability, e.g. `sample()`, without that module), add the module it names in the same sync (`pack add ai`, or `pack add ai-web` on the web) and follow its **App action** in the report. Read the pack's entry in the report, diff the file against `app-studio/packs/<name>/starter/…` (placeholders `{{slug}}` and `{{title}}` stand for the app's name), merge what applies, then run `node .claude/studio/studio-sync.mjs ack` so the note stops.
+
+7. **Project instructions.** If the `sync` or `check` output says "Project instructions template changed", an app's instructions live in Project settings, so no sync can update them. Tell the coordinator in your hand-back with the ready prompt the tool printed; the coordinator compares and updates its own instructions (keeping app-specific text). Once the coordinator confirms, run `node .claude/studio/studio-sync.mjs ack instructions` and commit the lock. Until then the start-up check keeps reminding.
