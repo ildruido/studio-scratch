@@ -12,7 +12,8 @@
 //       missing, belongs to another commit, isn't approve/pass, lists a blocking finding, or came from the wrong reviewer
 //
 // Files: .claude/state/review.json and qa.json (kept out of git through .git/info/exclude).
-// Needed only when the diff against the base branch changes more than docs and harness files.
+// Needed only when the diff against the base branch changes more than docs and harness files
+// (prompt files under plugins/studio agents, skills, commands and the template instructions need review, not QA).
 import { spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -22,16 +23,39 @@ import { risk } from "./review-precheck.mjs";
 const KINDS = { review: ["approve", "changes"], qa: ["pass", "fail"] };
 const GOOD = { review: "approve", qa: "pass" };
 const REVIEWERS = ["reviewer", "reviewer-deep"];
-const DOC_ONLY = /\.md$|^docs\/|^\.claude\/|^CHANGELOG/;
+// Docs, harness files and the files release code writes (app-studio's unreleased entries and release records, its plugin version).
+const DOC_ONLY = /\.md$|^docs\/|^\.claude\/|^CHANGELOG|^releases\/(\d+\.\d+\.\d+|unreleased\/[^/]+)\.json$|^plugins\/studio\/\.claude-plugin\/plugin\.json$/;
+
+// Prompt files steer behaviour, so they are not docs even though they end in .md: the agents, skills and commands and the
+// app template's instructions. They need a review result, not QA (nothing to run in a browser).
+const PROMPT = /^plugins\/studio\/(agents|skills|commands)\/.*\.md$|^plugins\/studio\/templates\/(CLAUDE|project-instructions)\.md$/;
+const isDoc = (n) => DOC_ONLY.test(n) && !PROMPT.test(n);
 
 const git = (root, ...a) => {
   const r = spawnSync("git", ["-C", root, ...a], { encoding: "utf8" });
   return r.status === 0 ? r.stdout.trim() : null;
 };
+/** The base ref to compare with: origin/<base> first (a local base can be stale or missing in a shallow cloud clone). */
+const baseRef = (root, base) => (git(root, "rev-parse", "--verify", "-q", `origin/${base}`) ? `origin/${base}` : git(root, "rev-parse", "--verify", "-q", base) ? base : null);
+/** Fingerprint of the change's own code (patch id, zero context, without docs and release bookkeeping): it stays the same when
+ *  only main was merged in or a release record was rewritten, and changes when the code under review changes. */
+export function ownCode(root, base = "main") {
+  const ref = baseRef(root, base);
+  if (!ref) return "";
+  const names = git(root, "diff", "--name-only", `${ref}...HEAD`) ?? git(root, "diff", "--name-only", ref, "HEAD");
+  const files = (names ?? "").split("\n").filter((n) => n && !isDoc(n));
+  if (!files.length) return "";
+  const diff = spawnSync("git", ["-C", root, "diff", "-U0", `${ref}...HEAD`, "--", ...files], { encoding: "utf8", maxBuffer: 1 << 28 });
+  if (diff.status !== 0) return "";
+  const id = spawnSync("git", ["-C", root, "patch-id", "--stable"], { encoding: "utf8", input: diff.stdout });
+  return (id.stdout ?? "").split(" ")[0].trim();
+}
+/** Where the script lives in this checkout: an app has it under .claude/hooks, app-studio itself under plugins/studio/hooks. */
+const scriptPath = (root) => (existsSync(join(root, ".claude/hooks/verdict.mjs")) ? ".claude/hooks/verdict.mjs" : "plugins/studio/hooks/verdict.mjs");
 const fileOf = (root, kind) => join(root, ".claude", "state", `${kind}.json`);
 
 /** Validates the agent's input, stamps the commit and writes the file. Returns { file } or { error }. */
-export function writeVerdict(root, kind, input) {
+export function writeVerdict(root, kind, input, base = "main") {
   if (!KINDS[kind]) return { error: `unknown kind "${kind}": use review or qa` };
   const commit = git(root, "rev-parse", "HEAD");
   if (!commit) return { error: "not a git repository with a commit: nothing to stamp" };
@@ -44,7 +68,7 @@ export function writeVerdict(root, kind, input) {
   }
   if (input.verdict === GOOD[kind] && findings.some((f) => f.severity === "blocking")) return { error: `"${GOOD[kind]}" cannot list a blocking finding: fix it or change the verdict` };
   if (kind === "review" && !REVIEWERS.includes(input.reviewer)) return { error: `"reviewer" must be ${REVIEWERS.join(" or ")}` };
-  const out = { kind, commit, verdict: input.verdict, ...(kind === "review" ? { reviewer: input.reviewer } : {}), findings, at: new Date().toISOString() };
+  const out = { kind, commit, fp: ownCode(root, base), verdict: input.verdict, ...(kind === "review" ? { reviewer: input.reviewer } : {}), findings, at: new Date().toISOString() };
   const file = fileOf(root, kind);
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, `${JSON.stringify(out, null, 2)}\n`);
@@ -60,27 +84,39 @@ export function writeVerdict(root, kind, input) {
 
 /** What is missing for HEAD, as a list of sentences; empty when nothing is needed or both results pass. */
 export function verdictProblems(root, base = "main") {
-  const ref = git(root, "rev-parse", "--verify", "-q", base) ? base : git(root, "rev-parse", "--verify", "-q", `origin/${base}`) ? `origin/${base}` : null;
+  // origin/<base> first: a local base branch can be stale or missing (cloud checkouts are shallow single-branch clones).
+  const ref = baseRef(root, base);
   const head = git(root, "rev-parse", "HEAD");
   if (!ref || !head) return [];
-  const names = (git(root, "diff", "--name-only", `${ref}...HEAD`) ?? "").split("\n").filter(Boolean);
-  if (!names.some((n) => !DOC_ONLY.test(n))) return [];
+  // A shallow clone may have no merge base for `...`; compare with the base tip instead. If the diff can't be read at all,
+  // fail closed: a gate that silently passes is worse than one that asks to fetch.
+  const diff = git(root, "diff", "--name-only", `${ref}...HEAD`) ?? git(root, "diff", "--name-only", ref, "HEAD");
+  if (diff === null) return [`could not compare HEAD with ${ref} (shallow clone?): run \`git fetch --deepen 50 origin ${base}\` and check again`];
+  const names = diff.split("\n").filter(Boolean);
+  if (!names.some((n) => !isDoc(n))) return [];
+  // Only prompt files changed: review applies, QA does not.
+  const needsQa = names.some((n) => !isDoc(n) && !PROMPT.test(n));
   const short = head.slice(0, 7);
   const out = [];
   const read = (kind) => {
     try { return JSON.parse(readFileSync(fileOf(root, kind), "utf8")); } catch { return null; }
   };
-  const r = risk(root, base);
+  // A result covers HEAD when it was written for it, or for the same own code (only main or release bookkeeping moved since).
+  const fp = ownCode(root, base);
+  const covers = (x) => x.commit === head || (!!x.fp && x.fp === fp);
+  const sp = scriptPath(root);
+  const r = risk(root, ref);
   const agent = r.reviewer ?? "reviewer";
   const rv = read("review");
-  if (!rv) out.push(`no review result for ${short}: run the \`${agent}\` agent on \`git diff ${base}...HEAD\` (it ends by writing its result through \`node .claude/hooks/verdict.mjs write review\`)`);
-  else if (rv.commit !== head) out.push(`the review result is for ${String(rv.commit).slice(0, 7)}, not ${short}: this commit changed after the review, so run the \`${agent}\` agent again`);
+  if (!rv) out.push(`no review result for ${short}: run the \`${agent}\` agent on \`git diff ${ref}...HEAD\` (it ends by writing its result through \`node ${sp} write review\`)`);
+  else if (!covers(rv)) out.push(`the review result is for ${String(rv.commit).slice(0, 7)}, not ${short}: this commit changed after the review, so run the \`${agent}\` agent again`);
   else if (rv.verdict !== "approve") out.push(`the review says "${rv.verdict}": fix its findings, commit, and run the \`${agent}\` agent again`);
   else if ((rv.findings ?? []).some((f) => f.severity === "blocking")) out.push("the review result still lists blocking findings: fix them, commit, and run the reviewer again");
   else if (agent === "reviewer-deep" && rv.reviewer !== "reviewer-deep") out.push("this diff is high risk (`node .claude/hooks/review-precheck.mjs risk`): run the `reviewer-deep` agent, not `reviewer`");
+  if (!needsQa) return out;
   const qa = read("qa");
-  if (!qa) out.push(`no QA result for ${short}: run the \`qa\` agent (it ends by writing its result through \`node .claude/hooks/verdict.mjs write qa\`)`);
-  else if (qa.commit !== head) out.push(`the QA result is for ${String(qa.commit).slice(0, 7)}, not ${short}: this commit changed after QA, so run the \`qa\` agent again`);
+  if (!qa) out.push(`no QA result for ${short}: run the \`qa\` agent (it ends by writing its result through \`node ${sp} write qa\`)`);
+  else if (!covers(qa)) out.push(`the QA result is for ${String(qa.commit).slice(0, 7)}, not ${short}: this commit changed after QA, so run the \`qa\` agent again`);
   else if (qa.verdict !== "pass") out.push(`QA says "${qa.verdict}": fix its findings, commit, and run the \`qa\` agent again`);
   else if ((qa.findings ?? []).some((f) => f.severity === "blocking")) out.push("the QA result still lists blocking findings: fix them, commit, and run `qa` again");
   return out;
@@ -88,7 +124,7 @@ export function verdictProblems(root, base = "main") {
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const a = process.argv.slice(2);
-  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const root = git(dirname(fileURLToPath(import.meta.url)), "rev-parse", "--show-toplevel") ?? join(dirname(fileURLToPath(import.meta.url)), "..", "..");
   if (a[0] === "write") {
     const from = a.includes("--from") ? a[a.indexOf("--from") + 1] : "-";
     let input;

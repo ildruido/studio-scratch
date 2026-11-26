@@ -20,8 +20,9 @@ The skills and agents in `.claude/` are the shared studio harness, copied from `
 | AI plan        | none |
 | Access model   | `whoever the owner shares it with (artifact app)` (existing app: private artifact, no sign-in) |
 | Storage shape  | `per-person documents` (existing app: one person's habits and check-ins in `db`) |
-| Decision log   | `docs/PRD.md` "Decisions" (default; change it only if the app keeps its own decision log, and give its path) |
+| Decision log   | `docs/discovery/decision-log.md` |
 | Owner-merged repos | |
+| Phase          | discovery |
 
 ### Domain rules
 
@@ -40,6 +41,22 @@ Build, QA and release steps that depend on the stack. Skills say "the stack note
 - **QA:** see `.claude/packs/artifact/QA.md`; fake `db` in e2e; streak logic unit-tested with fixed dates.
 - **Release:** `.claude/packs/artifact/RELEASE.md`, capabilities `{"db": {}}`.
 - **Preview:** none.
+
+## Discovery profile
+
+The discovery skills are generic: they read this section for everything about this product. Keep it current as the documents evolve (`node .claude/hooks/app-setup.mjs discovery-profile set "Row=value"`). What each row means: `.claude/packs/discovery/STACK.md`.
+
+| Field | Value |
+| --- | --- |
+| Product        | A booking page for a small yoga studio |
+| Target users   | Owners of one-room yoga studios |
+| Starting idea  | `docs/discovery/starting-idea.md` (a starting point, not a fixed plan) |
+| Docs folder    | `docs/discovery/` |
+| Sign-off mode  | per artifact |
+| Exit criteria  | default |
+| Principles     | not set yet |
+| Domain risks   | not set yet |
+| Prototype look and feel | not set yet |
 
 ## Roles
 

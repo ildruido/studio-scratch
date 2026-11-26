@@ -2,6 +2,7 @@
 name: harness-sync
 description: Pull released app-studio updates into this app - update the harness, add or remove a stack pack or module ("add the web pack"), or act on a start-up warning that the harness is behind. Not for old hand-built apps (migrate-app). Never changes app-studio itself.
 model: inherit
+effort: low
 ---
 
 # Harness sync
@@ -14,17 +15,17 @@ model: inherit
 2. If it stops with "not live-checked yet", a release between this app's version and the newest one still has `status.main: pending` in `app-studio`'s `releases/` (`node ../app-studio/scripts/release.mjs pending` lists them): nothing was changed; tell the App Creator and stop. Never work around it, never pass `--live-check` (only the studio-scratch check does).
 3. If it stops on **skipped** files, each is a local change that never reached `app-studio`. Send it as an idea (`harness-idea` skill) if it would help every app, or move it to the App profile if it was app-specific; then run `sync` again with `--force` to restore the shared version.
 4. If it stops on `health`, fix what it reports (the commit hook blocks the commit otherwise) and run `node .claude/studio/studio-sync.mjs health` again.
-5. **Pack starter files** (CI workflow, configs, server, platform adapters) are the app's own code. `sync` refreshes the ones you never edited and adds files new in a pack; for the rest the check says "edited here". If it says starter files are **held back** (the app calls a module's capability, e.g. `sample()`, without that module), add the module it names in the same sync (`pack add ai`, or `pack add ai-web` on the web) and follow its **App action** in the report. Read the pack's entry in the report, diff the file against `app-studio/packs/<name>/starter/…` (placeholders `{{slug}}` and `{{title}}` stand for the app's name), merge what applies, then run `node .claude/studio/studio-sync.mjs ack` so the note stops.
+5. **Pack starter files** held back or "edited here": read `${CLAUDE_SKILL_DIR}/sync-notes.md`, part 5, and follow it.
 6. `sync` prints a short report from the release records: one line per release (version, summary, linked issues and PR) and a "Needs you" part. Do not read the changelog or any release file yourself. Apply each **App action** it lists (for example a new App profile field or a settings change). An **Admin action** is not yours to do: relay it to the App Creator (or, in a Project, the coordinator) as exact, copy-ready steps, and say in the sync summary that it is pending. Give the App Creator the release lines as they are, no retelling. Only if asked for more about one release: `node ../app-studio/scripts/release.mjs details X.Y.Z`. To print the report again: `node ../app-studio/scripts/studio-sync.mjs changelog --app .` (add `--since X.Y.Z` for another starting version).
    Then look for this app's own ideas that got fixed: closed issues on `app-studio` whose body names this app, with the label `harness-idea` or `studio-backlog`. Their closing comment names the release. Say in the sync summary which of this app's ideas were fixed and in which release, and which were declined (and why).
-7. **Project instructions.** If the `sync` or `check` output says "Project instructions template changed", an app's instructions live in Project settings, so no sync can update them. Tell the coordinator in your hand-back with the ready prompt the tool printed; the coordinator compares and updates its own instructions (keeping app-specific text). Once the coordinator confirms, run `node .claude/studio/studio-sync.mjs ack instructions` and commit the lock. Until then the start-up check keeps reminding.
+7. **Project instructions.** If the output says "Project instructions template changed": read `${CLAUDE_SKILL_DIR}/sync-notes.md`, part 7, and follow it.
 8. Commit `chore(harness): sync studio vX.Y.Z` (the line `sync` printed) and merge it via a PR (CLAUDE.md "Git workflow"). Only `.claude/` changed, so `CI gate` passes quickly and `health` checks the harness.
 
 An app set up before the harness had modules or a lock is not a plain sync: use the `migrate-app` skill, which starts with `studio-sync.mjs inventory` and the App Creator's OK on a plan.
 
 ## Add a stack pack to an existing app
 
-`node .claude/studio/studio-sync.mjs pack add <name>` (for example when an artifact prototype gets a web version: `pack add web`). Files the app already has are kept and listed; merge those by hand from `app-studio/packs/<name>/starter/`. Then `npm install` (and `npm install --prefix server` for `web`) and commit the lockfiles. Adding `web` to an artifact app: replace `.github/workflows/ci.yml` with the web starter by hand and set `build` to `build:web`. `static-site` is a whole stack of its own: it can't be added to an existing artifact or web app, or the other way round (`pack add` refuses it). A site that needs a stack the pack lacks (sign-in, a database) starts a different app or goes through a `harness-idea`; there is no pack clean-up routine.
+Read `${CLAUDE_SKILL_DIR}/add-pack.md` and follow it.
 
 ## Changing the harness itself
 
