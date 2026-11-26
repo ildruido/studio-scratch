@@ -60,4 +60,7 @@ Also asked neutrally: what are one-room studio owners' biggest problems, in thei
 
 ## Deviations
 
-- None yet.
+- 2026-11-26: The search tool and the shell cannot reach Reddit (refused), so the planned Reddit and forum communities for U2 to U4 were not searched. Effect on method: first-hand voices come only from magazine essays and the press, so the three-community minimum for U2 to U4 cannot be met by this round.
+- 2026-11-26: Disconfirming queries fell short of the standard minimum of 2 for U1 (1 run) and U4 (1 run). Effect on method: the quota was not met for these two.
+- 2026-11-26: The search stopped after one round (about 5 minutes of the 20-minute box) and one batch of source openings, to keep usage light; the box was not used up. Owner podcasts and further Capterra pages were not searched.
+- 2026-11-26: Launch markets were assumed (US, UK, Canada, Australia), not confirmed by the App Creator. No Canadian source was found.

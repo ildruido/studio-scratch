@@ -4,4 +4,4 @@ Index of every study run with the research method (`.claude/packs/research/FRAME
 
 | Id | Study | Type | Tier | Verdict |
 | --- | --- | --- | --- | --- |
-| R-001 | [Do one-room yoga studio owners struggle with bookings](R-001-do-one-room-yoga-studio-owners-struggle/protocol.md) | user-reality-check | standard | In progress |
+| R-001 | [Do one-room yoga studio owners struggle with bookings](R-001-do-one-room-yoga-studio-owners-struggle/protocol.md) | user-reality-check | standard | Needs primary research: no evidence that bookings specifically hurt, none that they do not; one thin search round, Reddit unreachable, all verdicts Low confidence |
