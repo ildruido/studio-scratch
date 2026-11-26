@@ -56,7 +56,7 @@ The discovery skills are generic: they read this section for everything about th
 | Exit criteria  | default |
 | Principles     | not set yet |
 | Domain risks   | not set yet |
-| Prototype look and feel | Calm and clean: cool green-grey, teal accent, rounded cards, phone first, light and dark |
+| Prototype look and feel | Pick your mat: the page is the studio floor plan; week strip on top; 'your usual' shortcut for returning students |
 
 ## Roles
 

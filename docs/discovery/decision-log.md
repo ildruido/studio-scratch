@@ -2,6 +2,12 @@
 
 Product decisions, newest first. Entries are added, numbered, dated and superseded by `node .claude/hooks/decisions.mjs` (`add`, `supersede`, `list`, `show`), never typed by hand. An entry is never rewritten: a changed decision is a new entry that supersedes the old one.
 
+### D-007 Booking page direction: Pick your mat (2026-11-26)
+- Status: Active
+- Decision: Direction C (pick your mat on a floor plan), keeping B's 'your usual' shortcut and A's week strip. Parked: owner floor-plan editor, bring-a-friend, mat rental, waitlist, calendar add.
+- Why: Only direction that cannot be mistaken for a generic booking tool; rests on an unproven guess that students care about choosing a spot.
+- Decided by: Ale
+
 ### D-005 Primary persona is the solo owner-teacher (2026-11-26)
 - Status: Active
 - Decision: MVP primary persona: a one-room studio owner who teaches and runs all admin alone; secondary: owner with a part-time helper
