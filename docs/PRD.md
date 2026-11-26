@@ -17,9 +17,7 @@ Ale, on a private Claude artifact. No sign-in, no AI.
 Sign-in, AI, reminders, history charts, editing past days, multiple users.
 
 ## Decisions
-- 2026-11-10: Artifact prototype first (Ale). The `db` capability stores data per Claude user — it is the artifact equivalent of "on my device".
-- 2026-11-10: "Today" uses the device's local date and rolls over at local midnight.
-- 2026-11-10: Removing a habit deletes its history.
+Moved to `docs/discovery/decision-log.md` (D-001 to D-003, same dates).
 
 ## Change log
 - 2026-11-10: Initial PRD from Ale's description.
