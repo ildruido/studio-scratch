@@ -13,7 +13,7 @@ Status values: `not started`, `in progress`, `done`, `dropped` (with the decisio
 | 5 | Constraints and non-goals | not started | |
 | 6 | MVP and roadmap | not started | |
 | 7 | Prototype | in progress | Booking flow v1 awaiting review |
-| 8 | Architecture handoff | not started | |
+| 8 | Architecture handoff | in progress | Written without foundation, constraints or MVP; assumptions listed (D-008) |
 | 9 | Decision log current | not started | |
 
 ## Risks and things not checked
