@@ -2,6 +2,12 @@
 
 Product decisions, newest first. Entries are added, numbered, dated and superseded by `node .claude/hooks/decisions.mjs` (`add`, `supersede`, `list`, `show`), never typed by hand. An entry is never rewritten: a changed decision is a new entry that supersedes the old one.
 
+### D-008 Recommend web pack for the booking page, artifact as prototype (2026-11-26)
+- Status: Active
+- Decision: Recommendation only (stack asked at start building): web pack with artifact kept as a prototype target; shared bookings need more than per-person db
+- Why: Students and owner must share one timetable; the artifact db holds documents per person
+- Decided by: Claude (assumption)
+
 ### D-007 Booking page direction: Pick your mat (2026-11-26)
 - Status: Active
 - Decision: Direction C (pick your mat on a floor plan), keeping B's 'your usual' shortcut and A's week strip. Parked: owner floor-plan editor, bring-a-friend, mat rental, waitlist, calendar add.
