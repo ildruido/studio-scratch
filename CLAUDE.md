@@ -56,7 +56,7 @@ The discovery skills are generic: they read this section for everything about th
 | Exit criteria  | default |
 | Principles     | not set yet |
 | Domain risks   | not set yet |
-| Prototype look and feel | not set yet |
+| Prototype look and feel | Calm and clean: cool green-grey, teal accent, rounded cards, phone first, light and dark |
 
 ## Roles
 
