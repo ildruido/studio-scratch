@@ -3,7 +3,6 @@
   "packs": {
     "artifact": "0.5.1",
     "base": "0.10.2",
-    "discovery": "0.1.1",
     "research": "0.1.1",
     "user": "0.1.0"
   },
@@ -40,9 +39,6 @@
     ".claude/packs/artifact/review-rules.json": "2cd6d8c13f798c9b2c2f24dbf02e2d135f45855e1ba14b4909ace05a334eaef4",
     ".claude/packs/base/STACK.md": "4223aa50edf49a9e35f6d4473b4a3f74089d405f347297058f9f2f10f3567ed1",
     ".claude/packs/base/review-rules.json": "368532d17cd1d9e451d3d2a68297a46d849aab03f60b134773ae3912d0fa9069",
-    ".claude/packs/discovery/STACK.md": "15d73022b370939925060ecc3587edc7761c047e12585d91e7a87c57a42c2630",
-    ".claude/packs/discovery/WORKFLOW.md": "39d220bade97d0a0603dd2b6a5c95cd751ccce83f9a8c56df89b16e584b46e8f",
-    ".claude/packs/discovery/exit-criteria.md": "a85d9e1e1b40734b7de8d1483ad74eac85da539e6aa95f8283b69d22259fab25",
     ".claude/packs/research/FRAMEWORK.md": "062baac7794ade2f9fb8fee6dc80953752007468e0990ffe05b58b2009d912c5",
     ".claude/packs/research/STACK.md": "09609a4229edf126dada9826069ed46f7e0ffd3e4bd495af55bb37cececa0c3d",
     ".claude/packs/research/competitor-entry-template.md": "038a2f44ee8a3d36c84c856dcb20111c67834105109cf8eaca8ed79f3498e6f0",
@@ -51,16 +47,8 @@
     ".claude/packs/research/sizing-sheet-template.md": "6c630fdc9bbe6b90c583bb116cf4d1f82de782e24381734f6c0af47a97cd0fbb",
     ".claude/packs/research/studies.mjs": "9fbf70630eae353ed3e32e7ff0b3537e33a1886611e7a5a6a2659c9667b1e7e0",
     ".claude/packs/user/STACK.md": "ead9a63571e3984512e2d50b6f5d96a8ed6d2eaeeebd15a9dd4cb808f4d5d47f",
-    ".claude/skills/architecture-handoff/SKILL.md": "2f8769d0ff5cbcab64894113aca303a7c3070d4fbb9296eaef7084d4517ca308",
     ".claude/skills/build-feature/SKILL.md": "f1e2add09054f891b811423202ce151e0101695763ee5f6a490108015d9705be",
     ".claude/skills/build-feature/merge.md": "8890fe6ce4b58fef51265f2b73fc2f360c458b565fac148291dc23648894d452",
-    ".claude/skills/discovery-interview/SKILL.md": "a34c660cc455e77ae576aaff5ae227f33b58127b8bbd0693368cecf695bc70f0",
-    ".claude/skills/discovery-interview/constraints.md": "3c51108352bd6e4c48e88236aa67e9701e5fe071dbea988c071b5a9dbebae5a3",
-    ".claude/skills/discovery-interview/foundation.md": "e61971ec655abae4cc5a6064fc5ec944bfa2d364e1248ba3927fc901fb80bab4",
-    ".claude/skills/discovery-interview/mvp-roadmap.md": "eb66014fe63361f5fdc8dd3e257bdc4c2cce6eb5aace3a0dce3f0f3db8d6333f",
-    ".claude/skills/discovery-interview/personas.md": "32b4618fa975b35d914c7b20588fb6a117e7ffb3c952a9435e5c4dff1302c276",
-    ".claude/skills/discovery-interview/success-metrics.md": "c072d8a6daf548378cf15aa85ccd16b6548232d1682335c964ab18c60ec7cb14",
-    ".claude/skills/exit-gate/SKILL.md": "de77bdf98731ab16d06044044c550d3fbf6509e1425f30607ca58bfe906d0e92",
     ".claude/skills/harness-idea/SKILL.md": "313a3c8e60ef572df1ecf8018912ee7a3a45f08c159bfb6f487ec935a6283ef9",
     ".claude/skills/harness-idea/dup-search.mjs": "b7372a1d298619f5b7c667e0b2539e4acb86d0205df3cff69e92bd0571a34e4d",
     ".claude/skills/harness-idea/idea-file.mjs": "fe13d7c33c6bf5688461e966be91e81294a8098a62c348f8390295df4b521695",
@@ -75,8 +63,6 @@
     ".claude/skills/prd-intake/SKILL.md": "9a51e910a1369b562452a0a3e92e04c70a64229e1ba6d50cab854566bc600f71",
     ".claude/skills/prd-intake/features.md": "bb7eba6f58053e8216c0b15d449a191553b838bc5a5f3a645a45c6561a5359ce",
     ".claude/skills/prd-intake/from-discovery.md": "e7a301e801be2302581572925a5ae31fb034d9214e6157a755269997f55c2118",
-    ".claude/skills/prototype/SKILL.md": "c706928168b9e822f4c03ad21b981b64c1f12205eb7bc9f6fa8bfc3355956816",
-    ".claude/skills/prototype/design-alternatives.md": "44335cdc2c241472c163c647759dfd1581605bffb74831a2b817aea61fce7d36",
     ".claude/skills/release/SKILL.md": "5b8b2370679f2352223e8635396b6e21620da635f39dd96de5132fa2de133dcc",
     ".claude/skills/release/gates.md": "fcf8d616bb30324d772732862d415bd8da532a3745d053af73f9998a402497e3",
     ".claude/skills/research/SKILL.md": "563ccced0d1ed335d15c60748393fd3e8e00eba3e684da19c8c95816d6c61621",
@@ -85,7 +71,6 @@
     ".claude/skills/research/external-research.md": "d3702946efbb7335dd7101a434b28af607d7860f1db9d55aed97ff9fccfbfdbd",
     ".claude/skills/research/market-size.md": "579f0d8a9d5d56780919637127ec3e8c0527c0fbb22b02dbb0cc47dc2491cc60",
     ".claude/skills/research/user-reality-check.md": "a2b8fac5d47a667e31af813ca3c80055fb32b79d6cca541c899a6bb0bd4cd31a",
-    ".claude/skills/riskiest-hypotheses/SKILL.md": "03762352dae0cf56bf685e3020e09cc3ecc48c1eb2a7b9cfe642d4c2ccb31e54",
     ".claude/skills/test-handoff/SKILL.md": "4aabe7cb34b3e2f6c9da2d86eeda8a9f7e563ba681f68f11fb589bb0dd722a80",
     ".claude/studio/studio-sync.mjs": "61d396040b651abfe7e102c038c40ea7a5b8dcf4b3120deb880312b0ac72a89b"
   },
@@ -129,26 +114,6 @@
       "pack": "base",
       "installed": "095ed32573a224944d9eac2b8cc396b6d454ee6c15841b389ca6de65e1208a3e",
       "seen": "095ed32573a224944d9eac2b8cc396b6d454ee6c15841b389ca6de65e1208a3e"
-    },
-    "docs/discovery/decision-log.md": {
-      "pack": "discovery",
-      "installed": "41e5e4dd7beb2bf4b6c089d8d3b866a3fdcdd1e2d5bc96e5c4d2dc63e7571984",
-      "seen": "41e5e4dd7beb2bf4b6c089d8d3b866a3fdcdd1e2d5bc96e5c4d2dc63e7571984"
-    },
-    "docs/discovery/prototypes.md": {
-      "pack": "discovery",
-      "installed": "62b19e3438d6e8aa29f6ee37e7d39251f1911a432a62902a15955e0fea801cda",
-      "seen": "62b19e3438d6e8aa29f6ee37e7d39251f1911a432a62902a15955e0fea801cda"
-    },
-    "docs/discovery/starting-idea.md": {
-      "pack": "discovery",
-      "installed": "3bf79099ff83e0f4db5d5b8fee695a5f56f5e4fa89b899ff7e71d230ebfcbf76",
-      "seen": "3bf79099ff83e0f4db5d5b8fee695a5f56f5e4fa89b899ff7e71d230ebfcbf76"
-    },
-    "docs/discovery/status.md": {
-      "pack": "discovery",
-      "installed": "4b6e941d10b1ff0dcf335a294777bb6c73c788571af2e2b0d78b9b7b4f50846f",
-      "seen": "4b6e941d10b1ff0dcf335a294777bb6c73c788571af2e2b0d78b9b7b4f50846f"
     },
     "docs/research/studies.md": {
       "pack": "research",
