@@ -12,7 +12,7 @@ Status values: `not started`, `in progress`, `done`, `dropped` (with the decisio
 | 4 | Success metrics | not started | |
 | 5 | Constraints and non-goals | not started | |
 | 6 | MVP and roadmap | not started | |
-| 7 | Prototype | not started | |
+| 7 | Prototype | in progress | Booking flow v1 awaiting review |
 | 8 | Architecture handoff | not started | |
 | 9 | Decision log current | not started | |
 
