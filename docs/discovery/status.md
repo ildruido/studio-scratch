@@ -7,7 +7,7 @@ Status values: `not started`, `in progress`, `done`, `dropped` (with the decisio
 | # | Exit criterion | Status | Notes |
 | --- | --- | --- | --- |
 | 1 | Product foundation | not started | |
-| 2 | Target users and personas | not started | |
+| 2 | Target users and personas | in progress | Written on a thin reality check; all personas speculative (D-004, D-005) |
 | 3 | Riskiest hypotheses | not started | |
 | 4 | Success metrics | not started | |
 | 5 | Constraints and non-goals | not started | |
