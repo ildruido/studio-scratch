@@ -2,6 +2,12 @@
 
 Product decisions, newest first. Entries are added, numbered, dated and superseded by `node .claude/hooks/decisions.mjs` (`add`, `supersede`, `list`, `show`), never typed by hand. An entry is never rewritten: a changed decision is a new entry that supersedes the old one.
 
+### D-006 R-001 next step and launch markets (2026-11-26)
+- Status: Active
+- Decision: After R-001 (Needs primary research): run a second desk round, then about 10 owner interviews. Launch markets for research: US, UK, Canada and Australia.
+- Why: R-001 found no evidence that bookings specifically hurt one-room yoga studio owners and no evidence they do not; all verdicts Low confidence (docs/research/R-001-do-one-room-yoga-studio-owners-struggle/report.md).
+- Decided by: Ale
+
 ### D-005 Primary persona is the solo owner-teacher (2026-11-26)
 - Status: Active
 - Decision: MVP primary persona: a one-room studio owner who teaches and runs all admin alone; secondary: owner with a part-time helper
