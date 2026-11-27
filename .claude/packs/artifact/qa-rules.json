@@ -1,5 +1,0 @@
-{
-  "outputs": [
-    { "dir": "dist-artifact", "maxBytes": 16777216, "onlyFiles": ["index.html"], "forbid": ["sk-ant-"] }
-  ]
-}
