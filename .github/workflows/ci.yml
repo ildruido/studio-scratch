@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   changes:
-    if: github.event.pull_request.draft != true
+    if: github.event.pull_request.draft != true && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -158,8 +158,10 @@ jobs:
       - name: Every job passed or was rightly skipped; drafts never pass
         env:
           DRAFT: ${{ github.event.pull_request.draft == true }}
+          FORK: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
           RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
           echo "Job results: $RESULTS"
+          if [ "$FORK" = true ]; then echo "Fork PR: no checks run for it. Re-push it as a branch of this repository."; exit 1; fi
           if [ "$DRAFT" = true ]; then echo "Draft PR: mark it ready to run the checks."; exit 1; fi
           for r in $RESULTS; do case "$r" in success|skipped) ;; *) exit 1 ;; esac; done

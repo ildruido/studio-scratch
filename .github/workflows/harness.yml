@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      # A fork PR fails here, before any checkout, so none of its code runs (a skipped required check would count as passed).
+      - if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: echo "Fork PR - re-push it as a branch of this repository." && exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
